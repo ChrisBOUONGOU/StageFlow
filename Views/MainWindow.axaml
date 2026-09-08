@@ -1,0 +1,503 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:StageFlow.Views.Controls"
+    x:Class="StageFlow.Views.MainWindow"
+    Width="1600"
+    Height="900"
+    MinWidth="1200"
+    MinHeight="700"
+    Title="StageFlow"
+    Background="{DynamicResource AppBackgroundBrush}">
+
+	<Window.Styles>
+
+		<!-- ========================= -->
+		<!-- GLOBAL BUTTON STYLE        -->
+		<!-- ========================= -->
+
+		<Style Selector="Button">
+			<Setter Property="Foreground"
+                    Value="{DynamicResource AppTextBrush}"/>
+		</Style>
+
+		<!-- ========================= -->
+		<!-- RIGHT TOOLBAR              -->
+		<!-- ========================= -->
+
+		<Style Selector="Button.rightToolButton">
+
+			<Setter Property="Width"
+                    Value="40"/>
+
+			<Setter Property="Height"
+                    Value="40"/>
+
+			<Setter Property="Padding"
+                    Value="0"/>
+
+			<Setter Property="Margin"
+                    Value="0"/>
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppSurfaceSecondaryBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppBorderBrush}"/>
+
+			<Setter Property="BorderThickness"
+                    Value="1"/>
+
+			<Setter Property="CornerRadius"
+                    Value="7"/>
+
+			<Setter Property="Foreground"
+                    Value="{DynamicResource AppTextBrush}"/>
+
+			<Setter Property="HorizontalContentAlignment"
+                    Value="Center"/>
+
+			<Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+		</Style>
+
+		<Style Selector="Button.rightToolButton:pointerover">
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppHoverBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppAccentBrush}"/>
+
+		</Style>
+
+		<Style Selector="Button.rightToolButton:pressed">
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppPrimaryBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppAccentBrush}"/>
+
+		</Style>
+
+		<!-- ========================= -->
+		<!-- MAIN BUTTONS               -->
+		<!-- ========================= -->
+
+		<Style Selector="Button.primaryButton">
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppPrimaryBrush}"/>
+
+			<Setter Property="Foreground"
+                    Value="{DynamicResource AppWhiteBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppPrimaryBrush}"/>
+
+		</Style>
+
+		<Style Selector="Button.primaryButton:pointerover">
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppHoverBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppPrimaryBrush}"/>
+
+		</Style>
+
+		<Style Selector="Button.accentButton">
+
+			<Setter Property="Background"
+                    Value="{DynamicResource AppAccentBrush}"/>
+
+			<Setter Property="Foreground"
+                    Value="{DynamicResource AppWhiteBrush}"/>
+
+			<Setter Property="BorderBrush"
+                    Value="{DynamicResource AppAccentBrush}"/>
+
+		</Style>
+
+	</Window.Styles>
+
+	<Grid RowDefinitions="60,*,32">
+
+		<!-- ========================= -->
+		<!-- TOP TOOLBAR                -->
+		<!-- ========================= -->
+
+		<Border
+            Grid.Row="0"
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,0,0,1">
+
+			<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto">
+
+				<TextBlock
+                    Margin="20,0"
+                    VerticalAlignment="Center"
+                    Text="STAGEFLOW"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppLogoBrush}"/>
+
+				<Button
+                    Grid.Column="1"
+                    Content="Text"/>
+
+				
+
+				<Button
+                    Grid.Column="2"
+                    Content="Image"
+					Click="AddImage_Click"/>
+
+				<Button
+					Grid.Column="3"
+					Content="Video"
+					Click="AddVideo_Click"/>
+				
+				
+
+				<Border Grid.Column="4"/>
+
+				<Button
+					Grid.Column="5"
+					Content="Présentation"
+					Click="OpenPresentation_Click"
+					Margin="5,0"
+					Classes="primaryButton"/>
+
+				<Button
+                    Grid.Column="6"
+                    Content="OUTPUT"
+                    Click="OpenOutput_Click"
+                    Margin="5,0"
+                    Classes="accentButton"/>
+
+				<Button
+                    Grid.Column="7"
+                    Content="GO LIVE"
+                    Click="GoLive_Click"
+                    Margin="5,0"
+                    Classes="primaryButton"/>
+
+				<Button
+                    Grid.Column="8"
+                    Content="Save"
+                    Command="{Binding SaveProjectCommand}"
+                    Margin="10,0"/>
+
+			</Grid>
+		</Border>
+
+		<!-- ========================= -->
+		<!-- MAIN AREA                  -->
+		<!-- ========================= -->
+
+		<Grid
+            Grid.Row="1"
+            ColumnDefinitions="240,*,350">
+
+			<!-- PLAYLIST -->
+			<Border
+				Grid.Column="0"
+				Background="{DynamicResource AppSurfaceBrush}"
+				BorderBrush="{DynamicResource AppBorderBrush}"
+				BorderThickness="0,0,1,0">
+
+				<Grid RowDefinitions="Auto,Auto,*">
+
+					<TextBlock
+						Grid.Row="0"
+						Margin="15,12,15,8"
+						Text="PLAYLIST"
+						FontWeight="Bold"
+						Foreground="{DynamicResource AppTextBrush}"/>
+
+					<Grid
+						Grid.Row="1"
+						ColumnDefinitions="*,*"
+						Margin="8,0,8,8"
+						ColumnSpacing="6">
+
+						<Button
+							Grid.Column="0"
+							Content="+  SLIDE"
+							Command="{Binding AddSlideeCommand}"
+							Background="{DynamicResource AppPrimaryBrush}"
+							Foreground="{DynamicResource AppWhiteBrush}"/>
+
+						<Button
+							Grid.Column="1"
+							Content="−  DELETE"
+							Command="{Binding DeleteSlideeCommand}"
+							Background="{DynamicResource AppSurfaceSecondaryBrush}"
+							Foreground="{DynamicResource AppTextBrush}"/>
+
+					</Grid>
+
+					<ListBox
+						Grid.Row="2"
+						ItemsSource="{Binding Slides}"
+						SelectedItem="{Binding SelectedSlide}">
+
+						<ListBox.ItemTemplate>
+
+							<DataTemplate>
+
+								<Border
+									Margin="6"
+									Padding="10"
+									Background="{DynamicResource AppSurfaceSecondaryBrush}"
+									BorderBrush="{DynamicResource AppBorderBrush}"
+									BorderThickness="1"
+									CornerRadius="6">
+
+									<TextBlock
+										Text="{Binding Title}"
+										Foreground="{DynamicResource AppTextBrush}"/>
+
+								</Border>
+
+							</DataTemplate>
+
+						</ListBox.ItemTemplate>
+
+					</ListBox>
+
+				</Grid>
+
+			</Border>
+
+			<!-- ========================= -->
+			<!-- CENTER                     -->
+			<!-- ========================= -->
+
+			<Grid
+                Grid.Column="1"
+                RowDefinitions="*,260"
+                Background="{DynamicResource AppBackgroundBrush}">
+
+				<!-- EDITOR -->
+
+				<Border
+                    Grid.Row="0"
+                    Background="{DynamicResource AppBackgroundBrush}">
+
+					<controls:SlideCanvas
+                        DataContext="{Binding Editor}"/>
+
+				</Border>
+
+				<!-- PREVIEW / LIVE -->
+
+				<Grid
+                    Grid.Row="1"
+                    ColumnDefinitions="*,*"
+                    Background="{DynamicResource AppBackgroundBrush}">
+
+					<Border
+                        Grid.Column="0"
+                        Margin="4"
+                        Background="{DynamicResource AppSurfaceBrush}"
+                        BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1">
+
+						<controls:PreviewPanel
+                            DataContext="{Binding}"/>
+
+					</Border>
+
+					<Border
+                        Grid.Column="1"
+                        Margin="4"
+                        Background="{DynamicResource AppSurfaceBrush}"
+                        BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1">
+
+						<controls:LiveOutputPanel
+                            DataContext="{Binding}"/>
+
+					</Border>
+
+				</Grid>
+
+			</Grid>
+
+			<!-- ========================= -->
+			<!-- RIGHT SIDEBAR              -->
+			<!-- ========================= -->
+
+			<Grid
+                Grid.Column="2"
+                ColumnDefinitions="52,*"
+                Background="{DynamicResource AppSurfaceBrush}">
+
+				<!-- ICON BAR -->
+
+				<Border
+                    Grid.Column="0"
+                    Background="{DynamicResource AppBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="0,0,1,0">
+
+					<StackPanel
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Center"
+                        Spacing="6"
+                        Margin="6,10">
+
+						<Button
+                            x:Name="PropertiesToolButton"
+                            Classes="rightToolButton"
+                            Tag="Properties"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Propriétés">
+
+							<TextBlock
+                                Text="⚙"
+                                FontSize="20"/>
+
+						</Button>
+
+						<Button
+                            x:Name="MediaToolButton"
+                            Classes="rightToolButton"
+                            Tag="Media"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Médiathèque">
+
+							<TextBlock
+                                Text="▣"
+                                FontSize="20"/>
+
+						</Button>
+
+						<Button
+                            x:Name="ThemeToolButton"
+                            Classes="rightToolButton"
+                            Tag="Themes"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Thèmes">
+
+							<TextBlock
+                                Text="🎨"
+                                FontSize="17"/>
+
+						</Button>
+
+						<Button
+                            x:Name="LyricsToolButton"
+                            Classes="rightToolButton"
+                            Tag="Lyrics"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Paroles">
+
+							<TextBlock
+                                Text="♪"
+                                FontSize="23"/>
+
+						</Button>
+
+						<Button
+                            x:Name="BibleToolButton"
+                            Classes="rightToolButton"
+                            Tag="Bible"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Bible">
+
+							<TextBlock
+                                Text="📖"
+                                FontSize="17"/>
+
+						</Button>
+
+						<Button
+                            x:Name="ApplicationThemeToolButton"
+                            Classes="rightToolButton"
+                            Tag="ApplicationTheme"
+                            Click="RightToolButton_Click"
+                            ToolTip.Tip="Apparence">
+
+							<TextBlock
+								Text="◉"
+								FontSize="20"/>
+
+						</Button>
+
+					</StackPanel>
+
+				</Border>
+
+				<!-- PANELS -->
+
+				<Border
+                    Grid.Column="1"
+                    Background="{DynamicResource AppSurfaceBrush}">
+
+					<Grid>
+
+						<controls:PropertiesPanel
+                            x:Name="PropertiesPanel"
+                            DataContext="{Binding Editor}"/>
+
+						<controls:MediaLibraryPanel
+                            x:Name="MediaLibraryPanel"
+                            DataContext="{Binding MediaLibrary}"
+                            IsVisible="False"/>
+
+						<controls:ThemePanel
+                            x:Name="ThemePanel"
+                            DataContext="{Binding Theme}"
+                            IsVisible="False"/>
+
+						<controls:LyricsPanel
+                            x:Name="LyricsPanel"
+                            DataContext="{Binding Lyrics}"
+                            IsVisible="False"/>
+
+						<controls:BiblePanel
+                            x:Name="BiblePanel"
+                            DataContext="{Binding Bible}"
+                            IsVisible="False"/>
+
+						<controls:ApplicationThemePanel
+                            x:Name="ApplicationThemePanel"
+                            DataContext="{Binding ApplicationTheme}"
+                            IsVisible="False"/>
+
+					</Grid>
+
+				</Border>
+
+			</Grid>
+
+		</Grid>
+
+		<!-- ========================= -->
+		<!-- STATUS BAR                 -->
+		<!-- ========================= -->
+
+		<Border
+            Grid.Row="2"
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,1,0,0">
+
+			<TextBlock
+                Margin="12,0"
+                VerticalAlignment="Center"
+                Text="{Binding StatusText}"
+                Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+		</Border>
+
+	</Grid>
+
+</Window>

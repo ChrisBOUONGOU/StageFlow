@@ -1,0 +1,27 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.SlideCanvas"
+    Focusable="True">
+
+	<Border
+        Background="#080A0F"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+
+		<Viewbox
+            Stretch="Uniform"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+
+			<Canvas
+                x:Name="EditorCanvas"
+                Width="1920"
+                Height="1080"
+                Background="Black"/>
+
+		</Viewbox>
+
+	</Border>
+
+</UserControl>

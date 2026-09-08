@@ -1,0 +1,126 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.RemotePanel">
+
+	<Border
+        Background="{DynamicResource AppBackgroundBrush}"
+        Padding="16">
+
+		<Grid
+            RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+			<!-- HEADER -->
+
+			<TextBlock
+                Text="REMOTE CONTROL"
+                FontSize="16"
+                FontWeight="Bold"
+                Foreground="{DynamicResource AppTextBrush}"
+                Margin="0,0,0,16"/>
+
+			<!-- STATUS -->
+
+			<Border
+                Grid.Row="1"
+                Background="{DynamicResource AppSurfaceBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,12">
+
+				<StackPanel>
+
+					<TextBlock
+                        Text="STATUS"
+                        FontSize="11"
+                        Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+					<TextBlock
+                        Text="{Binding IsRemoteServerRunning,
+                               StringFormat='Server: {0}'}"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource AppTextBrush}"
+                        Margin="0,4,0,0"/>
+
+					<TextBlock
+                        Text="{Binding RemoteConnectionUrl}"
+                        FontSize="13"
+                        Foreground="{DynamicResource AppAccentBrush}"
+                        Margin="0,6,0,0"/>
+
+				</StackPanel>
+
+			</Border>
+
+			<!-- INSTRUCTIONS -->
+
+			<Border
+                Grid.Row="2"
+                Background="{DynamicResource AppSurfaceSecondaryBrush}"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,12">
+
+				<StackPanel>
+
+					<TextBlock
+                        Text="CONNECT YOUR PHONE"
+                        FontSize="11"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource AppTextBrush}"/>
+
+					<TextBlock
+                        Text="Connect your phone to the same Wi-Fi network, then enter the address shown above in StageFlow Remote."
+                        TextWrapping="Wrap"
+                        FontSize="12"
+                        Foreground="{DynamicResource AppSecondaryTextBrush}"
+                        Margin="0,6,0,0"/>
+
+				</StackPanel>
+
+			</Border>
+
+			<Border
+                Grid.Row="3"
+                Background="{DynamicResource AppSurfaceBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+
+				<StackPanel
+                    VerticalAlignment="Center">
+
+					<TextBlock
+                        Text="REMOTE READY"
+                        HorizontalAlignment="Center"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource AppTextBrush}"/>
+
+					<TextBlock
+                        Text="Your phone can control StageFlow over the local network."
+                        TextWrapping="Wrap"
+                        TextAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource AppSecondaryTextBrush}"
+                        Margin="0,8,0,0"/>
+
+				</StackPanel>
+
+			</Border>
+
+			<Button
+                Grid.Row="4"
+                Content="STOP REMOTE SERVER"
+                Command="{Binding StopRemoteServerCommand}"
+                Margin="0,12,0,0"/>
+
+		</Grid>
+
+	</Border>
+
+</UserControl>

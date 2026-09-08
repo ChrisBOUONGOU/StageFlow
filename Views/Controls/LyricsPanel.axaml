@@ -1,0 +1,192 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.LyricsPanel">
+
+	<Border
+        Background="{DynamicResource AppSurfaceBrush}"
+        BorderBrush="{DynamicResource AppBorderBrush}"
+        BorderThickness="1"
+        Padding="12">
+
+		<Grid
+            RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+
+			<!-- TITLE -->
+			<TextBlock
+                Text="LYRICS"
+                FontSize="15"
+                FontWeight="Bold"
+                Margin="0,0,0,10"
+                Foreground="{DynamicResource AppTextBrush}"/>
+
+			<!-- SONG INFO -->
+			<Grid
+                Grid.Row="1"
+                ColumnDefinitions="*,*"
+                Margin="0,0,0,8">
+
+				<TextBox
+                    Grid.Column="0"
+                    Watermark="Song title"
+                    Text="{Binding SongTitle}"
+                    Margin="0,0,4,0"/>
+
+				<TextBox
+                    Grid.Column="1"
+                    Watermark="Artist"
+                    Text="{Binding Artist}"
+                    Margin="4,0,0,0"/>
+
+			</Grid>
+
+			<!-- ACTIONS -->
+			<Grid
+                Grid.Row="2"
+                ColumnDefinitions="*,Auto,Auto"
+                Margin="0,0,0,8">
+
+				<Button
+                    Content="IMPORT"
+                    Command="{Binding ImportLyricsCommand}"
+                    Margin="0,0,4,0"/>
+
+				<Button
+                    Grid.Column="1"
+                    Content="PARSE"
+                    Command="{Binding ParseLyricsCommand}"
+                    Margin="4,0"/>
+
+				<Button
+                    Grid.Column="2"
+                    Content="CLEAR"
+                    Command="{Binding ClearLyricsCommand}"
+                    Margin="4,0,0,0"/>
+
+			</Grid>
+
+			<!-- LYRICS TEXT -->
+			<TextBox
+                Grid.Row="3"
+                Text="{Binding LyricsText}"
+                AcceptsReturn="True"
+                TextWrapping="Wrap"
+                Watermark="[Verse 1]
+Amazing grace
+How sweet the sound
+
+[Chorus]
+I once was lost
+But now am found"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                MinHeight="140"/>
+
+			<!-- SECTIONS -->
+			<ScrollViewer
+                Grid.Row="4"
+                Margin="0,10,0,10"
+                VerticalScrollBarVisibility="Auto">
+
+				<ItemsControl
+                    ItemsSource="{Binding Sections}">
+
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+
+							<Border
+                                Background="{DynamicResource AppSurfaceSecondaryBrush}"
+                                BorderBrush="{DynamicResource AppBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="8"
+                                Margin="0,0,0,6">
+
+								<StackPanel>
+
+									<TextBlock
+                                        Text="{Binding Name}"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource AppTextBrush}"/>
+
+									<TextBlock
+                                        Text="{Binding Lines.Count,
+                                            StringFormat='Lines: {0}'}"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource AppSecondaryTextBrush}"
+                                        Opacity="0.8"/>
+
+								</StackPanel>
+
+							</Border>
+
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+
+				</ItemsControl>
+
+			</ScrollViewer>
+
+			<!-- SLIDE GENERATION -->
+			<Border
+                Grid.Row="5"
+                Padding="12"
+                Background="{DynamicResource AppSurfaceSecondaryBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+
+				<Grid
+                    RowDefinitions="Auto,Auto">
+
+					<Grid
+                        ColumnDefinitions="*,Auto">
+
+						<TextBlock
+                            Text="Lines per slide"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource AppTextBrush}"/>
+
+						<NumericUpDown
+                            Grid.Column="1"
+                            Width="70"
+                            Minimum="1"
+                            Maximum="8"
+                            Value="{Binding LinesPerSlide}"/>
+
+					</Grid>
+
+					<Grid
+                        Grid.Row="1"
+                        ColumnDefinitions="*,Auto"
+                        Margin="0,8,0,0">
+
+						<StackPanel>
+
+							<TextBlock
+                                Text="{Binding SlideCount,
+                                    StringFormat='Generated slides: {0}'}"
+                                FontSize="11"
+                                Foreground="{DynamicResource AppSecondaryTextBrush}"
+                                Opacity="0.8"/>
+
+						</StackPanel>
+
+						<Button
+                            Grid.Column="1"
+                            Content="CREATE SLIDES"
+                            Command="{Binding CreateSlidesCommand}"
+                            Background="{DynamicResource AppPrimaryBrush}"
+                            Foreground="{DynamicResource AppWhiteBrush}"
+                            BorderBrush="{DynamicResource AppPrimaryBrush}"/>
+
+					</Grid>
+
+				</Grid>
+
+			</Border>
+
+		</Grid>
+
+	</Border>
+
+</UserControl>

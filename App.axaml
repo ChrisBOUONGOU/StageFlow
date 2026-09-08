@@ -1,0 +1,72 @@
+<Application
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.App">
+
+	<Application.Resources>
+
+		<!-- ========================= -->
+		<!-- STAGEFLOW COLOR PALETTE   -->
+		<!-- ========================= -->
+
+		<SolidColorBrush
+            x:Key="AppPrimaryBrush"
+            Color="#7A1F3D"/>
+
+		<SolidColorBrush
+            x:Key="AppAccentBrush"
+            Color="#2563EB"/>
+
+		<SolidColorBrush
+            x:Key="AppWhiteBrush"
+            Color="#FFFFFF"/>
+
+		<SolidColorBrush
+            x:Key="AppBackgroundBrush"
+            Color="#0B0D12"/>
+
+		<SolidColorBrush
+            x:Key="AppSurfaceBrush"
+            Color="#121722"/>
+
+		<SolidColorBrush
+            x:Key="AppSurfaceSecondaryBrush"
+            Color="#1A2030"/>
+
+		<SolidColorBrush
+            x:Key="AppBorderBrush"
+            Color="#2A3140"/>
+
+		<SolidColorBrush
+            x:Key="AppTextBrush"
+            Color="#FFFFFF"/>
+
+		<SolidColorBrush
+            x:Key="AppSecondaryTextBrush"
+            Color="#B8C0CC"/>
+
+		<SolidColorBrush
+            x:Key="AppHoverBrush"
+            Color="#202A3A"/>
+
+		<SolidColorBrush
+            x:Key="AppSelectionBrush"
+            Color="#7A1F3D"/>
+
+		<SolidColorBrush
+    x:Key="AppLogoBrush"
+    Color="#FFFFFF"/>
+
+		<SolidColorBrush
+			x:Key="AppIconBrush"
+			Color="#FFFFFF"/>
+
+		<SolidColorBrush x:Key="AppBibleVerseTextBrush" Color="#000000"/>
+
+	</Application.Resources>
+
+	<Application.Styles>
+		<FluentTheme />
+	</Application.Styles>
+
+</Application>

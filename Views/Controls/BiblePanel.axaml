@@ -1,0 +1,203 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.BiblePanel">
+
+	<Border
+        Background="{DynamicResource AppSurfaceBrush}"
+        BorderBrush="{DynamicResource AppBorderBrush}"
+        BorderThickness="1"
+        Padding="10">
+
+		<ScrollViewer VerticalScrollBarVisibility="Auto">
+
+			<StackPanel Spacing="8">
+
+				<!-- TITLE -->
+
+				<TextBlock
+                    Text="BIBLE"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<!-- LANGUAGE -->
+
+				<TextBlock
+                    Text="Langue"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+				<ComboBox
+                    ItemsSource="{Binding Languages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    HorizontalContentAlignment="Stretch"/>
+
+				<!-- TRANSLATION -->
+
+				<TextBlock
+                    Text="Traduction"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+				<ComboBox
+                    ItemsSource="{Binding Translations}"
+                    SelectedItem="{Binding SelectedTranslation}"
+                    HorizontalContentAlignment="Stretch"/>
+
+				<!-- BOOK -->
+
+				<TextBlock
+                    Text="Livre"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+				<ComboBox
+                    ItemsSource="{Binding Books}"
+                    SelectedItem="{Binding SelectedBook}"
+                    HorizontalContentAlignment="Stretch"/>
+
+				<!-- CHAPTER -->
+
+				<Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="6">
+
+					<StackPanel Grid.Column="0">
+
+						<TextBlock
+                            Text="Chapitre"
+                            FontSize="11"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Minimum="1"
+                            Maximum="150"
+                            Value="{Binding SelectedChapter}"
+                            Increment="1"
+                            FormatString="0"/>
+
+					</StackPanel>
+
+					<Button
+                        Grid.Column="1"
+                        Content="CHARGER"
+                        VerticalAlignment="Bottom"
+                        Command="{Binding LoadChapterCommand}"/>
+
+				</Grid>
+
+				<!-- SEARCH -->
+
+				<TextBlock
+                    Text="Recherche dans le chapitre"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"
+                    Margin="0,5,0,0"/>
+
+				<Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="6">
+
+					<TextBox
+                        Grid.Column="0"
+                        Watermark="Ex.: amour"
+                        Text="{Binding SearchText}"/>
+
+					<Button
+                        Grid.Column="1"
+                        Content="🔎"
+                        Command="{Binding SearchCommand}"/>
+
+				</Grid>
+
+				<!-- VERSES -->
+
+				<TextBlock
+                    Text="Versets"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"
+                    Margin="0,5,0,0"/>
+
+				<ListBox
+                    ItemsSource="{Binding Verses}"
+                    SelectedItem="{Binding SelectedVerse}"
+                    Height="170">
+
+					<ListBox.ItemTemplate>
+
+						<DataTemplate>
+
+							<StackPanel Margin="4">
+
+								<TextBlock
+                                    Text="{Binding Reference}"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource AppAccentBrush}"/>
+
+								<TextBlock
+                                    Text="{Binding Text}"
+                                    TextWrapping="Wrap"
+                                    Foreground="{DynamicResource AppBibleVerseTextBrush}"/>
+
+							</StackPanel>
+
+						</DataTemplate>
+
+					</ListBox.ItemTemplate>
+
+				</ListBox>
+
+				<!-- ADD VERSE -->
+
+				<Button
+                    Content="AJOUTER LE VERSET"
+                    Command="{Binding AddSelectedVerseCommand}"
+                    Background="{DynamicResource AppPrimaryBrush}"
+                    Foreground="#FFFFFF"/>
+
+				<!-- SLIDE SETTINGS -->
+
+				<Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="8">
+
+					<TextBlock
+                        Text="Versets / slide"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+					<NumericUpDown
+                        Grid.Column="1"
+                        Width="75"
+                        Minimum="1"
+                        Maximum="10"
+                        Value="{Binding VersesPerSlide}"
+                        FormatString="0"/>
+
+				</Grid>
+
+				<!-- ADD CHAPTER -->
+
+				<Button
+                    Content="AJOUTER LE CHAPITRE"
+                    Command="{Binding AddChapterCommand}"
+                    Background="{DynamicResource AppPrimaryBrush}"
+                    Foreground="#FFFFFF"/>
+
+				<!-- STATUS -->
+
+				<TextBlock
+                    Text="{Binding StatusMessage}"
+                    TextWrapping="Wrap"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"
+                    Margin="0,4,0,0"/>
+
+			</StackPanel>
+
+		</ScrollViewer>
+
+	</Border>
+
+</UserControl>

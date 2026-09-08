@@ -1,0 +1,476 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.PropertiesPanel">
+
+	<Border
+        Background="{DynamicResource AppBackgroundBrush}"
+        Padding="16">
+
+		<ScrollViewer>
+			<StackPanel Spacing="12">
+
+				<!-- ================================================= -->
+				<!-- HEADER -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="PROPERTIES"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<Border
+                    Height="1"
+                    Background="{DynamicResource AppBorderBrush}"/>
+
+
+				<!-- ================================================= -->
+				<!-- SELECTED ELEMENT -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="SELECTED ELEMENT"
+                    FontSize="12"
+                    Opacity="0.7"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+				<TextBlock
+                    Text="{Binding SelectedElement.Name}"
+                    FontSize="16"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+
+				<!-- ================================================= -->
+				<!-- TEXT PROPERTIES -->
+				<!-- ================================================= -->
+
+				<Border
+                    IsVisible="{Binding IsTextElement}"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    Padding="12"
+                    Margin="0,8,0,0"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1">
+
+					<StackPanel Spacing="10">
+
+						<TextBlock
+                            Text="TEXT"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource AppTextBrush}"/>
+
+						<!-- Text -->
+						<TextBox
+                            Text="{Binding SelectedText}"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            MinHeight="70"
+                            Watermark="Enter text..."/>
+
+
+						<!-- Font -->
+						<TextBlock
+                            Text="FONT"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<ComboBox
+                            SelectedItem="{Binding SelectedFontFamily}"
+                            PlaceholderText="Font">
+
+							<ComboBoxItem Content="Inter"/>
+							<ComboBoxItem Content="Arial"/>
+							<ComboBoxItem Content="Calibri"/>
+							<ComboBoxItem Content="Georgia"/>
+							<ComboBoxItem Content="Times New Roman"/>
+							<ComboBoxItem Content="Verdana"/>
+
+						</ComboBox>
+
+
+						<!-- Font size -->
+						<TextBlock
+                            Text="SIZE"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedFontSize}"
+                            Minimum="1"
+                            Maximum="500"
+                            Increment="1"/>
+
+
+						<!-- Bold / Italic -->
+						<Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8"
+                            Margin="0,5,0,0">
+
+							<ToggleButton
+                                Content="B"
+                                FontWeight="Bold"
+                                IsChecked="{Binding SelectedBold}"/>
+
+							<ToggleButton
+                                Grid.Column="1"
+                                Content="I"
+                                FontStyle="Italic"
+                                IsChecked="{Binding SelectedItalic}"/>
+
+						</Grid>
+
+
+						<!-- Color -->
+						<TextBlock
+                            Text="COLOR"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<TextBox
+                            Text="{Binding SelectedColor}"
+                            Watermark="#FFFFFF"/>
+
+
+						<!-- Horizontal alignment -->
+						<TextBlock
+                            Text="HORIZONTAL ALIGNMENT"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<Grid
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="4">
+
+							<Button
+                                Content="Left"
+                                Command="{Binding SetHorizontalAlignmentCommand}"
+                                CommandParameter="Left"/>
+
+							<Button
+                                Grid.Column="1"
+                                Content="Center"
+                                Command="{Binding SetHorizontalAlignmentCommand}"
+                                CommandParameter="Center"/>
+
+							<Button
+                                Grid.Column="2"
+                                Content="Right"
+                                Command="{Binding SetHorizontalAlignmentCommand}"
+                                CommandParameter="Right"/>
+
+						</Grid>
+
+
+						<!-- Vertical alignment -->
+						<TextBlock
+                            Text="VERTICAL ALIGNMENT"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<Grid
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="4">
+
+							<Button
+                                Content="Top"
+                                Command="{Binding SetVerticalAlignmentCommand}"
+                                CommandParameter="Top"/>
+
+							<Button
+                                Grid.Column="1"
+                                Content="Center"
+                                Command="{Binding SetVerticalAlignmentCommand}"
+                                CommandParameter="Center"/>
+
+							<Button
+                                Grid.Column="2"
+                                Content="Bottom"
+                                Command="{Binding SetVerticalAlignmentCommand}"
+                                CommandParameter="Bottom"/>
+
+						</Grid>
+
+					</StackPanel>
+
+				</Border>
+
+
+				<!-- ================================================= -->
+				<!-- VIDEO PROPERTIES -->
+				<!-- ================================================= -->
+
+				<Border
+                    IsVisible="{Binding IsVideoElement}"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    Padding="12"
+                    Margin="0,8,0,0"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1">
+
+					<StackPanel Spacing="10">
+
+						<TextBlock
+                            Text="VIDEO"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource AppTextBrush}"/>
+
+						<TextBlock
+                            Text="SOURCE"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<TextBlock
+                            Text="{Binding SelectedVideoSource}"
+                            TextWrapping="Wrap"
+                            Opacity="0.8"
+                            Foreground="{DynamicResource AppTextBrush}"/>
+
+						<Border
+                            Height="1"
+                            Background="{DynamicResource AppBorderBrush}"
+                            Margin="0,4"/>
+
+						<CheckBox
+                            Content="AutoPlay"
+                            IsChecked="{Binding SelectedAutoPlay}"/>
+
+						<CheckBox
+                            Content="Loop"
+                            IsChecked="{Binding SelectedLoop}"/>
+
+						<TextBlock
+                            Text="VOLUME"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<Slider
+                            Minimum="0"
+                            Maximum="1"
+                            Value="{Binding SelectedVideoVolume}"/>
+
+						<TextBlock
+                            Text="{Binding SelectedVideoVolume, StringFormat={}{0:P0}}"
+                            HorizontalAlignment="Right"
+                            FontSize="11"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+					</StackPanel>
+
+				</Border>
+
+
+				<!-- ================================================= -->
+				<!-- TRANSITION -->
+				<!-- ================================================= -->
+
+				<Border
+                    IsVisible="{Binding HasSelectedSlide}"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    Padding="12"
+                    Margin="0,8,0,0"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1">
+
+					<StackPanel Spacing="10">
+
+						<TextBlock
+                            Text="TRANSITION"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource AppTextBrush}"/>
+
+						<TextBlock
+                            Text="TYPE"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<ComboBox
+                            SelectedItem="{Binding SelectedTransitionType}">
+
+							<ComboBoxItem Content="Cut"/>
+							<ComboBoxItem Content="Fade"/>
+							<ComboBoxItem Content="Dissolve"/>
+							<ComboBoxItem Content="SlideLeft"/>
+							<ComboBoxItem Content="SlideRight"/>
+							<ComboBoxItem Content="SlideUp"/>
+							<ComboBoxItem Content="SlideDown"/>
+
+						</ComboBox>
+
+						<TextBlock
+                            Text="DURATION"
+                            FontSize="11"
+                            Opacity="0.7"
+                            Margin="0,5,0,0"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedTransitionDuration}"
+                            Minimum="0.05"
+                            Maximum="10"
+                            Increment="0.05"
+                            FormatString="0.00"/>
+
+						<TextBlock
+                            Text="{Binding SelectedTransitionDuration, StringFormat={}{0:F2} seconds}"
+                            FontSize="11"
+                            Opacity="0.7"
+                            HorizontalAlignment="Right"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+					</StackPanel>
+
+				</Border>
+
+
+				<!-- ================================================= -->
+				<!-- POSITION -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="POSITION"
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="8">
+
+					<StackPanel>
+						<TextBlock
+                            Text="X"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedX}"
+                            Minimum="0"
+                            Maximum="1920"/>
+					</StackPanel>
+
+					<StackPanel Grid.Column="1">
+						<TextBlock
+                            Text="Y"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedY}"
+                            Minimum="0"
+                            Maximum="1080"/>
+					</StackPanel>
+
+				</Grid>
+
+
+				<!-- ================================================= -->
+				<!-- SIZE -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="SIZE"
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="8">
+
+					<StackPanel>
+						<TextBlock
+                            Text="Width"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedWidth}"
+                            Minimum="30"
+                            Maximum="1920"/>
+					</StackPanel>
+
+					<StackPanel Grid.Column="1">
+						<TextBlock
+                            Text="Height"
+                            Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+						<NumericUpDown
+                            Value="{Binding SelectedHeight}"
+                            Minimum="30"
+                            Maximum="1080"/>
+					</StackPanel>
+
+				</Grid>
+
+
+				<!-- ================================================= -->
+				<!-- ROTATION -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="ROTATION"
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<NumericUpDown
+                    Value="{Binding SelectedRotation}"
+                    Minimum="-360"
+                    Maximum="360"/>
+
+
+				<!-- ================================================= -->
+				<!-- OPACITY -->
+				<!-- ================================================= -->
+
+				<TextBlock
+                    Text="OPACITY"
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppTextBrush}"/>
+
+				<Slider
+                    Minimum="0"
+                    Maximum="1"
+                    Value="{Binding SelectedOpacity}"/>
+
+				<TextBlock
+                    Text="{Binding SelectedOpacity, StringFormat={}{0:P0}}"
+                    HorizontalAlignment="Right"
+                    Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+
+				<!-- ================================================= -->
+				<!-- DELETE -->
+				<!-- ================================================= -->
+
+				<Button
+                    Content="Delete Element"
+                    Command="{Binding DeleteSelectedCommand}"
+                    Margin="0,15,0,0"/>
+
+			</StackPanel>
+		</ScrollViewer>
+	</Border>
+
+</UserControl>

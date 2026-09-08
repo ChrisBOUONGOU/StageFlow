@@ -1,0 +1,105 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.Controls.ApplicationThemePanel">
+
+	<Grid RowDefinitions="Auto,Auto,*,Auto"
+          Margin="16">
+
+		<StackPanel Grid.Row="0"
+                    Spacing="4">
+
+			<TextBlock
+                Text="APPARENCE"
+                FontSize="18"
+                FontWeight="Bold"
+                Foreground="{DynamicResource AppTextBrush}"/>
+
+			<TextBlock
+                Text="Choisissez les couleurs de StageFlow"
+                FontSize="12"
+                Foreground="{DynamicResource AppSecondaryTextBrush}"/>
+
+		</StackPanel>
+
+		<Border
+            Grid.Row="1"
+            Height="1"
+            Margin="0,14,0,14"
+            Background="{DynamicResource AppBorderBrush}"/>
+
+		<ListBox
+            Grid.Row="2"
+            ItemsSource="{Binding Themes}"
+            SelectedItem="{Binding SelectedTheme}">
+
+			<ListBox.ItemTemplate>
+
+				<DataTemplate>
+
+					<Border
+                        Margin="0,0,0,10"
+                        Padding="12"
+                        Background="{DynamicResource AppSurfaceSecondaryBrush}"
+                        BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+
+						<Grid ColumnDefinitions="*,Auto">
+
+							<StackPanel Spacing="6">
+
+								<TextBlock
+                                    Text="{Binding Name}"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource AppTextBrush}"/>
+
+								<StackPanel
+                                    Orientation="Horizontal"
+                                    Spacing="6">
+
+									<Border
+                                        Width="32"
+                                        Height="18"
+                                        CornerRadius="4"
+                                        Background="{Binding PrimaryColor}"/>
+
+									<Border
+                                        Width="32"
+                                        Height="18"
+                                        CornerRadius="4"
+                                        Background="{Binding AccentColor}"/>
+
+									<Border
+                                        Width="32"
+                                        Height="18"
+                                        CornerRadius="4"
+                                        Background="{Binding BackgroundColor}"/>
+
+								</StackPanel>
+
+							</StackPanel>
+
+						</Grid>
+
+					</Border>
+
+				</DataTemplate>
+
+			</ListBox.ItemTemplate>
+
+		</ListBox>
+
+		<Button
+            Grid.Row="3"
+            Height="42"
+            Margin="0,14,0,0"
+            Content="APPLIQUER LE THÈME"
+            Command="{Binding ApplyThemeCommand}"
+            Background="{DynamicResource AppPrimaryBrush}"
+            Foreground="{DynamicResource AppWhiteBrush}"
+            BorderBrush="{DynamicResource AppPrimaryBrush}"/>
+
+	</Grid>
+
+</UserControl>
