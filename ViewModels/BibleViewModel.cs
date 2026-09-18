@@ -31,7 +31,7 @@ namespace StageFlow.ViewModels
         private int _versesPerSlide = 2;
 
         private string _statusMessage =
-            "Sélectionnez une traduction.";
+            "Select a translation.";
 
         public ObservableCollection<BibleLanguage> Languages { get; }
             = new();
@@ -188,7 +188,7 @@ namespace StageFlow.ViewModels
             try
             {
                 StatusMessage =
-                    "Chargement des traductions...";
+                    "Loading translations...";
 
                 var allTranslations =
                     await _bibleService
@@ -211,13 +211,13 @@ namespace StageFlow.ViewModels
 
                 StatusMessage =
                     Translations.Count > 0
-                        ? "Sélectionnez une traduction."
-                        : "Aucune traduction disponible.";
+                        ? "Select a translation."
+                        : "No translation available.";
             }
             catch (Exception ex)
             {
                 StatusMessage =
-                    $"Erreur : {ex.Message}";
+                    $"Error : {ex.Message}";
             }
         }
 
@@ -229,7 +229,7 @@ namespace StageFlow.ViewModels
             try
             {
                 StatusMessage =
-                    "Chargement des livres...";
+                    "Loading books...";
 
                 var books =
                     await _bibleService
@@ -246,13 +246,13 @@ namespace StageFlow.ViewModels
 
                 StatusMessage =
                     Books.Count > 0
-                        ? "Sélectionnez un livre."
-                        : "Impossible de charger les livres.";
+                        ? "Select a book."
+                        : "Unable to load books.";
             }
             catch (Exception ex)
             {
                 StatusMessage =
-                    $"Erreur : {ex.Message}";
+                    $"Error : {ex.Message}";
             }
         }
 
@@ -261,21 +261,21 @@ namespace StageFlow.ViewModels
             if (SelectedTranslation == null)
             {
                 StatusMessage =
-                    "Sélectionnez une traduction.";
+                    "Select a translation.";
                 return;
             }
 
             if (SelectedBook == null)
             {
                 StatusMessage =
-                    "Sélectionnez un livre.";
+                    "Select a book.";
                 return;
             }
 
             try
             {
                 StatusMessage =
-                    $"Chargement de {SelectedBook.Name} {SelectedChapter}...";
+                    $"Loading {SelectedBook.Name} {SelectedChapter}...";
 
                 var chapter =
                     await _bibleService
@@ -290,7 +290,7 @@ namespace StageFlow.ViewModels
                 if (chapter == null)
                 {
                     StatusMessage =
-                        "Chapitre introuvable.";
+                        "Chapter not found.";
                     return;
                 }
 
@@ -298,12 +298,12 @@ namespace StageFlow.ViewModels
                     Verses.Add(verse);
 
                 StatusMessage =
-                    $"{chapter.Reference} — {chapter.Verses.Count} versets";
+                    $"{chapter.Reference} — {chapter.Verses.Count} verses";
             }
             catch (Exception ex)
             {
                 StatusMessage =
-                    $"Erreur : {ex.Message}";
+                    $"Error : {ex.Message}";
             }
         }
 
@@ -318,14 +318,14 @@ namespace StageFlow.ViewModels
                 SelectedBook == null)
             {
                 StatusMessage =
-                    "Chargez d'abord un livre.";
+                    "Load a book first.";
                 return;
             }
 
             try
             {
                 StatusMessage =
-                    "Recherche...";
+                    "Searching...";
 
                 var results =
                     await _bibleService.SearchAsync(
@@ -338,12 +338,12 @@ namespace StageFlow.ViewModels
                     SearchResults.Add(result);
 
                 StatusMessage =
-                    $"{SearchResults.Count} résultat(s).";
+                    $"{SearchResults.Count} result(s).";
             }
             catch (Exception ex)
             {
                 StatusMessage =
-                    $"Erreur : {ex.Message}";
+                    $"Error : {ex.Message}";
             }
         }
 
@@ -352,7 +352,7 @@ namespace StageFlow.ViewModels
             if (SelectedVerse == null)
             {
                 StatusMessage =
-                    "Sélectionnez un verset.";
+                    "Select a verse.";
                 return;
             }
 
@@ -367,7 +367,7 @@ namespace StageFlow.ViewModels
             _mainViewModel.RefreshSlides();
 
             StatusMessage =
-                $"{SelectedVerse.Reference} ajouté à la présentation.";
+                $"{SelectedVerse.Reference} added to the presentation.";
         }
 
         private async Task AddChapterAsync()
@@ -376,7 +376,7 @@ namespace StageFlow.ViewModels
                 SelectedBook == null)
             {
                 StatusMessage =
-                    "Sélectionnez une traduction et un livre.";
+                    "Select a translation and a book.";
                 return;
             }
 
@@ -391,7 +391,7 @@ namespace StageFlow.ViewModels
                 if (chapter == null)
                 {
                     StatusMessage =
-                        "Chapitre introuvable.";
+                        "Chapter not found.";
                     return;
                 }
 
@@ -417,12 +417,12 @@ namespace StageFlow.ViewModels
                 _mainViewModel.RefreshSlides();
 
                 StatusMessage =
-                    $"{chapter.Reference} ajouté — {slides.Count} slide(s).";
+                    $"{chapter.Reference} added — {slides.Count} slide(s).";
             }
             catch (Exception ex)
             {
                 StatusMessage =
-                    $"Erreur : {ex.Message}";
+                    $"Error : {ex.Message}";
             }
         }
 

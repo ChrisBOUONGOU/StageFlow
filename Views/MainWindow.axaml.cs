@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,7 +13,7 @@ namespace StageFlow.Views
 {
     public partial class MainWindow : Window
     {
-        private LiveOutputWindow? _liveOutputWindow;
+       
         private bool _isApplicationFullscreen;
         private PresentationWindow? _presentationWindow;
        
@@ -23,7 +24,7 @@ namespace StageFlow.Views
 
             KeyDown += MainWindow_KeyDown;
             DataContextChanged += MainWindow_DataContextChanged;
-            Closed += MainWindow_Closed;
+           
             KeyDown += MainWindow_KeyDown;
         }
 
@@ -152,43 +153,7 @@ namespace StageFlow.Views
             }
         }
 
-        private void MainWindow_Closed(
-            object? sender,
-            EventArgs e)
-        {
-            _liveOutputWindow?.Close();
-            _liveOutputWindow = null;
-        }
-
-        private void OpenOutput_Click(
-            object? sender,
-            RoutedEventArgs e)
-        {
-            if (_liveOutputWindow is not null)
-                return;
-
-            if (DataContext is not MainWindowViewModel viewModel)
-                return;
-
-            _liveOutputWindow = new LiveOutputWindow(viewModel);
-
-            _liveOutputWindow.Closed += (_, _) =>
-            {
-                _liveOutputWindow = null;
-            };
-
-            _liveOutputWindow.Show();
-        }
-
-        private void GoLive_Click(
-            object? sender,
-            RoutedEventArgs e)
-        {
-            if (DataContext is MainWindowViewModel viewModel)
-            {
-                viewModel.Live.GoLive();
-            }
-        }
+       
 
         private void RightToolButton_Click(
     object? sender,
@@ -252,6 +217,145 @@ namespace StageFlow.Views
                 return;
 
             await viewModel.Editor.AddVideoCommand.ExecuteAsync(null);
+        }
+
+        private void AddText_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel viewModel)
+                return;
+
+            if (viewModel.SelectedSlide is null)
+                return;
+
+            viewModel.SelectedSlide.Elements.Add(
+                new TextElement
+                {
+                    Text = "New Text",
+                    X = 760,
+                    Y = 450,
+                    Width = 400,
+                    Height = 100,
+                    FontSize = 48,
+                    HorizontalAlignment = "Center",
+                    VerticalAlignment = "Center",
+                    ZIndex = 1
+                });
+
+            viewModel.Editor.RefreshCanvas();
+        }
+
+        private async void SlideTitle_DoubleTapped(object? sender, TappedEventArgs e)
+        {
+            if (sender is not TextBlock textBlock)
+                return;
+
+            if (textBlock.DataContext is not Slide slide)
+                return;
+
+            var dialog = new Window
+            {
+                Title = "Rename Slide",
+                Width = 400,
+                Height = 180
+            };
+
+            var textBox = new TextBox
+            {
+                Text = slide.Title,
+                Margin = new Thickness(20)
+            };
+
+            var button = new Button
+            {
+                Content = "OK",
+               
+                Margin = new Thickness(20)
+            };
+
+            button.Click += (_, _) =>
+            {
+                if (!string.IsNullOrWhiteSpace(textBox.Text))
+                {
+                    slide.Title = textBox.Text.Trim();
+                }
+
+                dialog.Close();
+            };
+
+            var panel = new StackPanel();
+
+            panel.Children.Add(textBox);
+            panel.Children.Add(button);
+
+            dialog.Content = panel;
+
+            await dialog.ShowDialog(TopLevel.GetTopLevel(this) as Window);
+        }
+
+        private void SlideTitleEditor_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (sender is not TextBox editor)
+                return;
+
+            if (e.Key == Key.Enter)
+            {
+                SaveSlideTitle(editor);
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                CancelSlideTitle(editor);
+            }
+        }
+
+        private void SlideTitleEditor_LostFocus(object? sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox editor)
+            {
+                SaveSlideTitle(editor);
+            }
+        }
+
+        private void SaveSlideTitle(TextBox editor)
+        {
+            if (editor.DataContext is not Slide slide)
+                return;
+
+            var newTitle = editor.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(newTitle))
+            {
+                slide.Title = newTitle;
+            }
+
+            if (editor.Parent is not Grid grid)
+                return;
+
+            if (grid.FindControl<TextBlock>("TitleText") is TextBlock titleText)
+            {
+                titleText.Text = slide.Title;
+                titleText.IsVisible = true;
+            }
+
+            editor.IsVisible = false;
+        }
+
+        private void CancelSlideTitle(TextBox editor)
+        {
+            if (editor.Parent is not Grid grid)
+                return;
+
+            if (editor.DataContext is Slide slide)
+            {
+                editor.Text = slide.Title;
+            }
+
+            if (grid.FindControl<TextBlock>("TitleText") is TextBlock titleText)
+            {
+                titleText.IsVisible = true;
+            }
+
+            editor.IsVisible = false;
         }
 
 

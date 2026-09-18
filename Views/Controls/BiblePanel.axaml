@@ -24,7 +24,7 @@
 				<!-- LANGUAGE -->
 
 				<TextBlock
-                    Text="Langue"
+                    Text="Language"
                     FontSize="11"
                     Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -36,7 +36,7 @@
 				<!-- TRANSLATION -->
 
 				<TextBlock
-                    Text="Traduction"
+                    Text="Translation"
                     FontSize="11"
                     Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -48,7 +48,7 @@
 				<!-- BOOK -->
 
 				<TextBlock
-                    Text="Livre"
+                    Text="Book"
                     FontSize="11"
                     Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -66,7 +66,7 @@
 					<StackPanel Grid.Column="0">
 
 						<TextBlock
-                            Text="Chapitre"
+                            Text="Chapter"
                             FontSize="11"
                             Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -81,7 +81,7 @@
 
 					<Button
                         Grid.Column="1"
-                        Content="CHARGER"
+                        Content="LOAD CHAPTER"
                         VerticalAlignment="Bottom"
                         Command="{Binding LoadChapterCommand}"/>
 
@@ -90,7 +90,7 @@
 				<!-- SEARCH -->
 
 				<TextBlock
-                    Text="Recherche dans le chapitre"
+                    Text="Search in the chapter"
                     FontSize="11"
                     Foreground="{DynamicResource AppSecondaryTextBrush}"
                     Margin="0,5,0,0"/>
@@ -114,7 +114,7 @@
 				<!-- VERSES -->
 
 				<TextBlock
-                    Text="Versets"
+                    Text="Verses"
                     FontSize="11"
                     Foreground="{DynamicResource AppSecondaryTextBrush}"
                     Margin="0,5,0,0"/>
@@ -151,7 +151,7 @@
 				<!-- ADD VERSE -->
 
 				<Button
-                    Content="AJOUTER LE VERSET"
+                    Content="ADD VERSE"
                     Command="{Binding AddSelectedVerseCommand}"
                     Background="{DynamicResource AppPrimaryBrush}"
                     Foreground="#FFFFFF"/>
@@ -163,7 +163,7 @@
                     ColumnSpacing="8">
 
 					<TextBlock
-                        Text="Versets / slide"
+                        Text="Verses / slide"
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -180,7 +180,7 @@
 				<!-- ADD CHAPTER -->
 
 				<Button
-                    Content="AJOUTER LE CHAPITRE"
+                    Content="ADD CHAPTER"
                     Command="{Binding AddChapterCommand}"
                     Background="{DynamicResource AppPrimaryBrush}"
                     Foreground="#FFFFFF"/>

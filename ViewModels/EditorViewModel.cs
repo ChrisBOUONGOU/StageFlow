@@ -6,6 +6,7 @@ using StageFlow.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Media;
 
 using StageFlow.Services;
 
@@ -157,6 +158,7 @@ namespace StageFlow.ViewModels
             OnPropertyChanged(nameof(SelectedBold));
             OnPropertyChanged(nameof(SelectedItalic));
             OnPropertyChanged(nameof(SelectedColor));
+            OnPropertyChanged(nameof(SelectedColorValue));
             OnPropertyChanged(nameof(SelectedHorizontalAlignment));
             OnPropertyChanged(nameof(SelectedVerticalAlignment));
 
@@ -431,6 +433,31 @@ namespace StageFlow.ViewModels
             }
         }
 
+        public Color SelectedColorValue
+        {
+            get
+            {
+                if (SelectedElement is not TextElement text)
+                    return Colors.White;
+
+                return Color.TryParse(text.Color, out var color)
+                    ? color
+                    : Colors.White;
+            }
+
+            set
+            {
+                if (SelectedElement is not TextElement text)
+                    return;
+
+                text.Color = $"#{value.R:X2}{value.G:X2}{value.B:X2}";
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedColor));
+                RefreshCanvas();
+            }
+        }
+
 
         // =========================================================
         // HORIZONTAL ALIGNMENT
@@ -602,6 +629,7 @@ namespace StageFlow.ViewModels
             OnPropertyChanged(nameof(SelectedItalic));
 
             OnPropertyChanged(nameof(SelectedColor));
+            OnPropertyChanged(nameof(SelectedColorValue));
 
             OnPropertyChanged(
                 nameof(SelectedHorizontalAlignment));

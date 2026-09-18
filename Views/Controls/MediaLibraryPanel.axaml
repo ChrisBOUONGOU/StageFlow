@@ -63,16 +63,13 @@
 						<DataTemplate>
 
 							<Button
-                                Command="{Binding
-                                    $parent[UserControl]
-                                    .DataContext
-                                    .SelectAssetCommand}"
-                                CommandParameter="{Binding}"
-                                PointerPressed="AssetPointerPressed"
-                                Padding="0"
-                                Margin="4"
-                                Background="Transparent"
-                                BorderThickness="0">
+    Command="{Binding $parent[UserControl].DataContext.SelectAssetCommand}"
+    CommandParameter="{Binding}"
+    PointerPressed="AssetPointerPressed"
+    Padding="0"
+    Margin="4"
+    Background="Transparent"
+    BorderThickness="0">
 
 								<Border
                                     Width="125"
@@ -99,8 +96,8 @@
 												<Image
                                                     Source="{Binding AbsolutePath}"
                                                     Stretch="Uniform"
-                                                    IsVisible="{Binding Type,
-                                                        Converter={StaticResource ImageAssetConverter}}"/>
+                                                    IsVisible="{Binding Type, Converter={StaticResource ImageAssetConverter}}"
+													/>
 
 												<!-- FILE ICON -->
 

@@ -32,7 +32,7 @@ namespace StageFlow.Models
                 new PresentationTheme
             {
                 Name = "Default",
-                BackgroundColor = "#000000",
+                BackgroundColor = "#10131A",
                 PrimaryColor = "#FFFFFF",
                 SecondaryColor = "#B8C0CC",
                 AccentColor = "#4F8CFF",

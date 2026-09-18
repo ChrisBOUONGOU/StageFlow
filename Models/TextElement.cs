@@ -18,9 +18,9 @@ namespace StageFlow.Models
 
         public string Color { get; set; } = "#FFFFFF";
 
-        public string HorizontalAlignment { get; set; } = "Center";
+        public string HorizontalAlignment { get; set; } = "left";
 
-        public string VerticalAlignment { get; set; } = "Center";
+        public string VerticalAlignment { get; set; } = "top";
 
         public double LetterSpacing { get; set; }
 

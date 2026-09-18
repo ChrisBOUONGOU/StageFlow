@@ -38,7 +38,7 @@
 						<DataTemplate>
 
 							<Button
-                                Command="{Binding $parent[UserControl].DataContext.ApplyThemeCommand}"
+                                Command="{Binding $parent[UserControl].DataContext.SelectThemeCommand}"
                                 CommandParameter="{Binding}"
                                 Padding="0"
                                 Margin="0,0,0,8"
@@ -130,7 +130,8 @@
 
 					<Button
                         Content="APPLY THEME"
-                        Command="{Binding ApplyThemeCommand}"
+                         Command="{Binding ApplyThemeCommand}"
+                    
                         Margin="0,8,0,0"/>
 
 				</StackPanel>

@@ -10,13 +10,13 @@
                     Spacing="4">
 
 			<TextBlock
-                Text="APPARENCE"
+                Text="APPEARANCE"
                 FontSize="18"
                 FontWeight="Bold"
                 Foreground="{DynamicResource AppTextBrush}"/>
 
 			<TextBlock
-                Text="Choisissez les couleurs de StageFlow"
+                Text="Choose the colors for StageFlow"
                 FontSize="12"
                 Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
@@ -94,7 +94,7 @@
             Grid.Row="3"
             Height="42"
             Margin="0,14,0,0"
-            Content="APPLIQUER LE THÈME"
+            Content="APPLY THEME"
             Command="{Binding ApplyThemeCommand}"
             Background="{DynamicResource AppPrimaryBrush}"
             Foreground="{DynamicResource AppWhiteBrush}"

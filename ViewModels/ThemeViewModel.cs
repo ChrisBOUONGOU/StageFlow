@@ -13,31 +13,21 @@ namespace StageFlow.ViewModels
 {
     public partial class ThemeViewModel : ObservableObject
     {
-        private readonly MainWindowViewModel
-        _mainViewModel;
+        private readonly MainWindowViewModel _mainViewModel;
+        private readonly ThemeService _themeService;
 
-        private readonly ThemeService
-            _themeService;
-
-        public ObservableCollection<PresentationTheme>
-            Themes
-        { get; } = new();
+        public ObservableCollection<PresentationTheme> Themes { get; } = new();
 
         [ObservableProperty]
         private PresentationTheme? selectedTheme;
 
-        public ThemeViewModel(
-            MainWindowViewModel mainViewModel)
+        public ThemeViewModel(MainWindowViewModel mainViewModel)
         {
-            _mainViewModel =
-                mainViewModel;
+            _mainViewModel = mainViewModel;
 
-            _themeService =
-                new ThemeService();
+            _themeService = new ThemeService();
 
-            foreach (
-                PresentationTheme theme
-                in _themeService.GetBuiltInThemes())
+            foreach (PresentationTheme theme in _themeService.GetBuiltInThemes())
             {
                 Themes.Add(theme);
             }
@@ -45,11 +35,14 @@ namespace StageFlow.ViewModels
             SelectedTheme =
                 Themes.FirstOrDefault(
                     x => x.Name ==
-                        mainViewModel
-                            .Document
-                            .Settings
-                            .ThemeName)
+                        mainViewModel.Document.Settings.ThemeName)
                 ?? Themes.FirstOrDefault();
+        }
+
+        [RelayCommand]
+        private void SelectTheme(PresentationTheme theme)
+        {
+            SelectedTheme = theme;
         }
 
         [RelayCommand]
@@ -63,7 +56,6 @@ namespace StageFlow.ViewModels
                 SelectedTheme);
 
             _mainViewModel.RefreshSlides();
-
             _mainViewModel.Editor.RefreshCanvas();
 
             _mainViewModel.SetStatus(
@@ -73,17 +65,9 @@ namespace StageFlow.ViewModels
         partial void OnSelectedThemeChanged(
             PresentationTheme? value)
         {
-            if (value == null)
-                return;
-
-            OnPropertyChanged(
-                nameof(SelectedThemeName));
-
-            OnPropertyChanged(
-                nameof(SelectedThemeFont));
-
-            OnPropertyChanged(
-                nameof(SelectedThemeBackground));
+            OnPropertyChanged(nameof(SelectedThemeName));
+            OnPropertyChanged(nameof(SelectedThemeFont));
+            OnPropertyChanged(nameof(SelectedThemeBackground));
         }
 
         public string SelectedThemeName =>

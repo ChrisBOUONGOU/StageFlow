@@ -1,8 +1,10 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StageFlow.Models;
 using StageFlow.Services;
+using StageFlow.Services.Remote;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,8 +13,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
-using StageFlow.Services.Remote;
 
 namespace StageFlow.ViewModels
 {
@@ -39,6 +39,9 @@ namespace StageFlow.ViewModels
 
         [ObservableProperty]
         private Slide? selectedSlide;
+
+        [ObservableProperty]
+        private SlideTheme? selectedTheme;
 
         [ObservableProperty]
         private Slide? liveSlide;
@@ -147,11 +150,13 @@ namespace StageFlow.ViewModels
                 new TextElement
                 {
                     Text = "Welcome to StageFlow",
-                    X = 100,
-                    Y = 350,
-                    Width = 1720,
-                    Height = 150,
+                    X = 0,
+                    Y = 0,
+                    Width = 1920,
+                    Height = 1080,
                     FontSize = 72,
+                    HorizontalAlignment = "Center",
+                    VerticalAlignment = "Center",
                     ZIndex = 1
                 });
 
@@ -163,7 +168,7 @@ namespace StageFlow.ViewModels
             var slide = new Slide
             {
                 Title = "Main Message",
-                Background = "#151922"
+                Background = "#10131A"
             };
 
             slide.Elements.Add(
@@ -401,7 +406,7 @@ namespace StageFlow.ViewModels
             var slide = new Slide
             {
                 Title = $"Slide {Slides.Count + 1}",
-                Background = "#000000"
+                Background = "#10131A"
             };
 
             Slides.Add(slide);
@@ -484,6 +489,17 @@ namespace StageFlow.ViewModels
 
             OnPropertyChanged(
                 nameof(IsRemoteServerRunning));
+        }
+
+        [RelayCommand]
+        private void ApplyTheme(SlideTheme theme)
+        {
+            if (SelectedSlide == null)
+                return;
+
+            SelectedSlide.Theme = theme;
+
+            SelectedTheme = theme;
         }
     }
 }

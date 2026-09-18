@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Documents;
+using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,6 +28,8 @@ namespace StageFlow.Models
         public double Opacity { get; set; } = 1.0;
 
         public int ZIndex { get; set; }
+
+    
 
         public bool IsVisible { get; set; } = true;
 

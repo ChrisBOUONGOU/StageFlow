@@ -148,7 +148,9 @@
 
 				<Button
                     Grid.Column="1"
-                    Content="Text"/>
+                    Content="Text"
+					Click="AddText_Click"
+					/>
 
 				
 
@@ -168,27 +170,15 @@
 
 				<Button
 					Grid.Column="5"
-					Content="Présentation"
+					Content="Presentation"
 					Click="OpenPresentation_Click"
 					Margin="5,0"
 					Classes="primaryButton"/>
 
+			
+
 				<Button
                     Grid.Column="6"
-                    Content="OUTPUT"
-                    Click="OpenOutput_Click"
-                    Margin="5,0"
-                    Classes="accentButton"/>
-
-				<Button
-                    Grid.Column="7"
-                    Content="GO LIVE"
-                    Click="GoLive_Click"
-                    Margin="5,0"
-                    Classes="primaryButton"/>
-
-				<Button
-                    Grid.Column="8"
                     Content="Save"
                     Command="{Binding SaveProjectCommand}"
                     Margin="10,0"/>
@@ -259,9 +249,26 @@
 									BorderThickness="1"
 									CornerRadius="6">
 
-									<TextBlock
-										Text="{Binding Title}"
-										Foreground="{DynamicResource AppTextBrush}"/>
+									<Grid>
+
+										<!-- Titre normal -->
+										<TextBlock
+                Text="{Binding Title}"
+                Foreground="{DynamicResource AppTextBrush}"
+                DoubleTapped="SlideTitle_DoubleTapped"/>
+
+										<!-- Zone d'édition -->
+										<TextBox
+											x:Name="TitleEditor"
+											Text="{Binding Title}"
+											IsVisible="False"
+											Foreground="{DynamicResource AppTextBrush}"
+											Background="{DynamicResource AppSurfaceBrush}"
+											DoubleTapped="SlideTitle_DoubleTapped"
+											KeyDown="SlideTitleEditor_KeyDown"
+											LostFocus="SlideTitleEditor_LostFocus"/>
+
+									</Grid>
 
 								</Border>
 
@@ -281,7 +288,6 @@
 
 			<Grid
                 Grid.Column="1"
-                RowDefinitions="*,260"
                 Background="{DynamicResource AppBackgroundBrush}">
 
 				<!-- EDITOR -->
@@ -295,38 +301,6 @@
 
 				</Border>
 
-				<!-- PREVIEW / LIVE -->
-
-				<Grid
-                    Grid.Row="1"
-                    ColumnDefinitions="*,*"
-                    Background="{DynamicResource AppBackgroundBrush}">
-
-					<Border
-                        Grid.Column="0"
-                        Margin="4"
-                        Background="{DynamicResource AppSurfaceBrush}"
-                        BorderBrush="{DynamicResource AppBorderBrush}"
-                        BorderThickness="1">
-
-						<controls:PreviewPanel
-                            DataContext="{Binding}"/>
-
-					</Border>
-
-					<Border
-                        Grid.Column="1"
-                        Margin="4"
-                        Background="{DynamicResource AppSurfaceBrush}"
-                        BorderBrush="{DynamicResource AppBorderBrush}"
-                        BorderThickness="1">
-
-						<controls:LiveOutputPanel
-                            DataContext="{Binding}"/>
-
-					</Border>
-
-				</Grid>
 
 			</Grid>
 
