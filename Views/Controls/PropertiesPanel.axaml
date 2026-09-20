@@ -137,20 +137,21 @@
 
 
 						<Border
-    Height="42"
-    HorizontalAlignment="Stretch"
-    Margin="0,10,0,10"
-    Background="{Binding SelectedColorValue}"
-    BorderBrush="#606575"
-    BorderThickness="1"
-    CornerRadius="5">
+                            Height="42"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10"
+                            Background="{Binding SelectedColorValue}"
+                            BorderBrush="#606575"
+                            BorderThickness="1"
+                            CornerRadius="5">
 
-							<ColorPicker
-	  Color="{Binding SelectedColorValue, Mode=TwoWay}"
-	  HorizontalAlignment="Stretch"
-	  HorizontalContentAlignment="Stretch"
-	  Background="Transparent"
-	  BorderThickness="0"/>
+							        <ColorPicker
+	                                  Color="{Binding SelectedColorValue, Mode=TwoWay}"
+	                                  HorizontalAlignment="Stretch"
+	                                  HorizontalContentAlignment="Stretch"
+	                                  Background="Transparent"
+	                                  BorderThickness="0"
+							          />
 						</Border>
 
 
