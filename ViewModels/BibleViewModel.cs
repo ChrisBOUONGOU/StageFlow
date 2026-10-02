@@ -432,9 +432,18 @@ namespace StageFlow.ViewModels
             var theme =
                 _mainViewModel.Theme.SelectedTheme;
 
+            var references = verse.Reference;
+
+            if (!string.IsNullOrEmpty(references))
+            {
+                references =
+                    char.ToUpper(references[0]) +
+                    references.Substring(1).ToLower();
+            }
+
             var slide = new Slide
             {
-                Title = verse.Reference,
+                Title = references,
                 Background =
                     theme?.BackgroundColor ?? "#10131A"
             };
@@ -442,19 +451,18 @@ namespace StageFlow.ViewModels
             slide.Elements.Add(
                 new TextElement
                 {
-                    Name = "Bible Reference",
-                    X = 120,
-                    Y = 90,
-                    Width = 1680,
-                    Height = 100,
-                    Text = verse.Reference,
+                    Name = "Bible Verse",
+                    X = 140,
+                    Y = 250,
+                    Width = 1640,
+                    Height = 500,
+                    Text = verse.Text,
                     FontFamily =
                         theme?.FontFamily ?? "Inter",
                     FontSize =
-                        theme?.TitleFontSize ?? 42,
-                    IsBold = true,
+                        theme?.BodyFontSize ?? 75,
                     Color =
-                        theme?.AccentColor ?? "#4F8CFF",
+                        theme?.PrimaryColor ?? "#FFFFFF",
                     HorizontalAlignment = "Center",
                     VerticalAlignment = "Center"
                 });
@@ -462,18 +470,19 @@ namespace StageFlow.ViewModels
             slide.Elements.Add(
                 new TextElement
                 {
-                    Name = "Bible Verse",
-                    X = 140,
-                    Y = 260,
-                    Width = 1640,
-                    Height = 600,
-                    Text = verse.Text,
+                    Name = "Bible Reference",
+                    X = 100,
+                    Y = 850,
+                    Width = 1720,
+                    Height = 100,
+                    Text = references,
                     FontFamily =
                         theme?.FontFamily ?? "Inter",
                     FontSize =
-                        theme?.BodyFontSize ?? 52,
+                        theme?.TitleFontSize ?? 42,
+                    IsBold = true,
                     Color =
-                        theme?.PrimaryColor ?? "#FFFFFF",
+                        theme?.AccentColor ?? "#4F8CFF",
                     HorizontalAlignment = "Center",
                     VerticalAlignment = "Center"
                 });

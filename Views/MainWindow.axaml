@@ -332,7 +332,7 @@
                             Classes="rightToolButton"
                             Tag="Properties"
                             Click="RightToolButton_Click"
-                            ToolTip.Tip="Propriétés">
+                            ToolTip.Tip="Properties">
 
 							<TextBlock
                                 Text="⚙"
@@ -345,7 +345,7 @@
                             Classes="rightToolButton"
                             Tag="Media"
                             Click="RightToolButton_Click"
-                            ToolTip.Tip="Médiathèque">
+                            ToolTip.Tip="Media">
 
 							<TextBlock
                                 Text="▣"
@@ -358,7 +358,7 @@
                             Classes="rightToolButton"
                             Tag="Themes"
                             Click="RightToolButton_Click"
-                            ToolTip.Tip="Thèmes">
+                            ToolTip.Tip="Themes">
 
 							<TextBlock
                                 Text="🎨"
@@ -371,7 +371,7 @@
                             Classes="rightToolButton"
                             Tag="Lyrics"
                             Click="RightToolButton_Click"
-                            ToolTip.Tip="Paroles">
+                            ToolTip.Tip="Lyrics">
 
 							<TextBlock
                                 Text="♪"
@@ -397,7 +397,7 @@
                             Classes="rightToolButton"
                             Tag="ApplicationTheme"
                             Click="RightToolButton_Click"
-                            ToolTip.Tip="Apparence">
+                            ToolTip.Tip="Application Theme">
 
 							<TextBlock
 								Text="◉"

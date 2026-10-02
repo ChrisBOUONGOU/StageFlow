@@ -79,17 +79,9 @@
                             Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
 						<ComboBox
-                            SelectedItem="{Binding SelectedFontFamily}"
-                            PlaceholderText="Font">
-
-							<ComboBoxItem Content="Inter"/>
-							<ComboBoxItem Content="Arial"/>
-							<ComboBoxItem Content="Calibri"/>
-							<ComboBoxItem Content="Georgia"/>
-							<ComboBoxItem Content="Times New Roman"/>
-							<ComboBoxItem Content="Verdana"/>
-
-						</ComboBox>
+    ItemsSource="{Binding AvailableFonts}"
+    SelectedItem="{Binding SelectedFontFamily, Mode=TwoWay}"
+    PlaceholderText="Font"/>
 
 
 						<!-- Font size -->

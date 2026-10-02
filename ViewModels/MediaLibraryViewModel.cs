@@ -28,6 +28,18 @@ namespace StageFlow.ViewModels
 
         public ObservableCollection<MediaAsset> Assets { get; } = new();
 
+        [RelayCommand]
+        private async Task ImportImage()
+        {
+            await ImportMediaByTypeAsync(MediaAssetType.Image);
+        }
+
+        [RelayCommand]
+        private async Task ImportVideo()
+        {
+            await ImportMediaByTypeAsync(MediaAssetType.Video);
+        }
+
         public IEnumerable<MediaAsset> FilteredAssets =>
             string.IsNullOrWhiteSpace(Filter)
                 ? Assets
@@ -212,10 +224,21 @@ namespace StageFlow.ViewModels
 
                 try
                 {
-                    MediaAsset asset =
-                        await _assetService.ImportAssetAsync(
-                            sourcePath,
-                            _mainViewModel.CurrentFilePath);
+                    MediaAsset asset;
+                   if (string.IsNullOrWhiteSpace(
+        _mainViewModel.CurrentFilePath))
+                    {
+                        asset =
+                            await _assetService.ImportTemporaryAssetAsync(
+                                sourcePath);
+                    }
+                    else
+                    {
+                        asset =
+                            await _assetService.ImportAssetAsync(
+                                sourcePath,
+                                _mainViewModel.CurrentFilePath);
+                    }
 
                     bool exists =
                         _mainViewModel.Document.MediaAssets
@@ -413,6 +436,142 @@ namespace StageFlow.ViewModels
         public bool IsImage(MediaAsset asset)
         {
             return asset.Type == MediaAssetType.Image;
+        }
+
+        private async Task ImportMediaByTypeAsync(MediaAssetType type)
+        {
+            Window? window =
+                App.Current?.ApplicationLifetime
+                    is Avalonia.Controls
+                        .ApplicationLifetimes
+                        .IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+            if (window == null)
+                return;
+
+            string[] patterns = type switch
+            {
+                MediaAssetType.Image =>
+                [
+                    "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.webp",
+            "*.bmp",
+            "*.gif"
+                ],
+
+                MediaAssetType.Video =>
+                [
+                    "*.mp4",
+            "*.mov",
+            "*.avi",
+            "*.mkv",
+            "*.webm",
+            "*.m4v"
+                ],
+
+                _ => []
+            };
+
+            string title = type == MediaAssetType.Image
+                ? "Import Image"
+                : "Import Video";
+
+            string fileTypeName = type == MediaAssetType.Image
+                ? "Images"
+                : "Videos";
+
+            IReadOnlyList<IStorageFile> files =
+                await window.StorageProvider
+                    .OpenFilePickerAsync(
+                        new FilePickerOpenOptions
+                        {
+                            Title = title,
+                            AllowMultiple = true,
+
+                            FileTypeFilter =
+                            [
+                                new FilePickerFileType(fileTypeName)
+                        {
+                            Patterns = patterns
+                        }
+                            ]
+                        });
+
+            int importedCount = 0;
+
+            foreach (IStorageFile file in files)
+            {
+                string? sourcePath = file.TryGetLocalPath();
+
+                if (string.IsNullOrWhiteSpace(sourcePath))
+                    continue;
+
+                try
+                {
+                    MediaAsset asset;
+
+                    if (!string.IsNullOrWhiteSpace(
+                            _mainViewModel.CurrentFilePath))
+                    {
+                        // Projet déjà sauvegardé
+                        asset =
+                            await _assetService.ImportAssetAsync(
+                                sourcePath,
+                                _mainViewModel.CurrentFilePath);
+                    }
+                    else
+                    {
+                        // Projet pas encore sauvegardé
+                        asset =
+                            await _assetService.ImportTemporaryAssetAsync(
+                                sourcePath);
+                    }
+
+                    bool exists =
+                        _mainViewModel.Document.MediaAssets
+                            .Any(existing =>
+                                existing.RelativePath ==
+                                asset.RelativePath);
+
+                    if (exists)
+                        continue;
+
+                    _mainViewModel.Document.MediaAssets.Add(asset);
+
+                    Assets.Add(asset);
+
+                 
+
+                    importedCount++;
+                }
+                catch (Exception ex)
+                {
+                    _mainViewModel.StatusText =
+                        $"Unable to import {file.Name}: {ex.Message}";
+                }
+            }
+
+            if (importedCount > 0)
+            {
+                await _mainViewModel.SaveProjectCommand.ExecuteAsync(null);
+            }
+
+            _mainViewModel.StatusText =
+                $"{importedCount} {fileTypeName.ToLower()} imported.";
+
+            OnPropertyChanged(nameof(FilteredAssets));
+        }
+
+        public async Task ConvertTemporaryAssetsToProjectAsync(
+    string stageflowFilePath)
+        {
+            await _assetService.ConvertTemporaryAssetsToProjectAsync(
+                _mainViewModel.Document,
+                stageflowFilePath);
         }
     }
 }

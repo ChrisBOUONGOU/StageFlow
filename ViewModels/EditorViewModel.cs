@@ -1,14 +1,14 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StageFlow.Models;
+using StageFlow.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
-using Avalonia.Media;
-
-using StageFlow.Services;
 
 namespace StageFlow.ViewModels
 {
@@ -319,22 +319,34 @@ namespace StageFlow.ViewModels
 
         public string SelectedFontFamily
         {
-            get =>
-                SelectedElement is TextElement text
-                    ? text.FontFamily
-                    : "Inter";
+            get => SelectedElement is TextElement text
+               ? text.FontFamily
+               : "Inter";
 
             set
             {
                 if (SelectedElement is not TextElement text)
                     return;
 
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
+
                 text.FontFamily = value;
 
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedFontFamily));
                 RefreshCanvas();
             }
         }
+
+        public ObservableCollection<string> AvailableFonts { get; } = new()
+{
+    "Inter",
+    "Arial",
+    "Calibri",
+    "Georgia",
+    "Times New Roman",
+    "Verdana"
+};
 
 
         // =========================================================

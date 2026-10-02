@@ -1,6 +1,7 @@
 <Application
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:converters="using:StageFlow.Converters"
     x:Class="StageFlow.App">
 
 	<Application.Resources>
@@ -70,5 +71,12 @@
 		<StyleInclude
         Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
 	</Application.Styles>
+
+	<Application.Resources>
+
+		<converters:ImageAssetConverter
+            x:Key="ImageAssetConverter"/>
+
+	</Application.Resources>
 
 </Application>

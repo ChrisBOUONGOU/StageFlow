@@ -275,8 +275,7 @@ namespace StageFlow.ViewModels
         [RelayCommand]
         private async Task SaveProject()
         {
-            if (string.IsNullOrWhiteSpace(
-                    CurrentFilePath))
+            if (string.IsNullOrWhiteSpace(CurrentFilePath))
             {
                 string directory =
                     Path.Combine(
@@ -291,10 +290,15 @@ namespace StageFlow.ViewModels
                         directory,
                         $"{Sanitize(ProjectName)}.stageflow.json");
             }
+            
+                await MediaLibrary.ConvertTemporaryAssetsToProjectAsync(
+                    CurrentFilePath);
 
             await _projectService.SaveAsync(
                 Document,
                 CurrentFilePath);
+
+            MediaLibrary.Refresh();
 
             StatusText =
                 $"Saved: {Path.GetFileName(CurrentFilePath)}";
@@ -501,5 +505,6 @@ namespace StageFlow.ViewModels
 
             SelectedTheme = theme;
         }
+
     }
 }

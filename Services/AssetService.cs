@@ -10,33 +10,33 @@ namespace StageFlow.Services
     public sealed class AssetService
     {
         private static readonly string[] ImageExtensions =
-   [
-       ".png",
-        ".jpg",
-        ".jpeg",
-        ".webp",
-        ".bmp",
-        ".gif"
-   ];
+        [
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".webp",
+            ".bmp",
+            ".gif"
+        ];
 
         private static readonly string[] VideoExtensions =
         [
             ".mp4",
-        ".mov",
-        ".avi",
-        ".mkv",
-        ".webm",
-        ".m4v"
+            ".mov",
+            ".avi",
+            ".mkv",
+            ".webm",
+            ".m4v"
         ];
 
         private static readonly string[] AudioExtensions =
         [
             ".mp3",
-        ".wav",
-        ".flac",
-        ".aac",
-        ".ogg",
-        ".m4a"
+            ".wav",
+            ".flac",
+            ".aac",
+            ".ogg",
+            ".m4a"
         ];
 
         public string CreateProjectFolder(
@@ -98,8 +98,7 @@ namespace StageFlow.Services
                     sourcePath);
 
             string safeName =
-                SanitizeFileName(
-                    originalName);
+                SanitizeFileName(originalName);
 
             string destinationFileName =
                 $"{safeName}_{hash[..8]}{extension}";
@@ -137,24 +136,171 @@ namespace StageFlow.Services
                 Name = originalName,
 
                 RelativePath =
-        relativePath.Replace(
-            '\\',
-            '/'),
+                    relativePath.Replace(
+                        '\\',
+                        '/'),
 
                 Type = type,
 
                 FileSize =
-        fileInfo.Length,
+                    fileInfo.Length,
 
                 ImportedAt =
-        DateTime.UtcNow
+                    DateTime.UtcNow
             };
+        }
+
+        public async Task<MediaAsset> ImportTemporaryAssetAsync(
+            string sourcePath)
+        {
+            if (!File.Exists(sourcePath))
+            {
+                throw new FileNotFoundException(
+                    "Asset not found.",
+                    sourcePath);
+            }
+
+            string extension =
+                Path.GetExtension(sourcePath)
+                    .ToLowerInvariant();
+
+            MediaAssetType type =
+                GetAssetType(extension);
+
+            string tempFolder =
+                GetTemporaryAssetsFolder();
+
+            Directory.CreateDirectory(tempFolder);
+
+            string originalName =
+                Path.GetFileNameWithoutExtension(
+                    sourcePath);
+
+            string hash =
+                await CalculateHashAsync(sourcePath);
+
+            string safeName =
+                SanitizeFileName(originalName);
+
+            string destinationFileName =
+                $"{safeName}_{hash[..8]}{extension}";
+
+            string destinationPath =
+                Path.Combine(
+                    tempFolder,
+                    destinationFileName);
+
+            if (!File.Exists(destinationPath))
+            {
+                await using FileStream source =
+                    File.OpenRead(sourcePath);
+
+                await using FileStream destination =
+                    File.Create(destinationPath);
+
+                await source.CopyToAsync(destination);
+            }
+
+            var fileInfo =
+                new FileInfo(destinationPath);
+
+            return new MediaAsset
+            {
+                Name = originalName,
+
+                RelativePath =
+                    destinationPath,
+
+                Type = type,
+
+                FileSize =
+                    fileInfo.Length,
+
+                ImportedAt =
+                    DateTime.UtcNow
+            };
+        }
+
+        public async Task ConvertTemporaryAssetsToProjectAsync(
+            PresentationDocument document,
+            string stageflowFilePath)
+        {
+            if (document.MediaAssets.Count == 0)
+                return;
+
+            string assetsFolder =
+                CreateProjectFolder(
+                    stageflowFilePath);
+
+            string projectFolder =
+                Path.GetDirectoryName(
+                    assetsFolder)!;
+
+            foreach (MediaAsset asset in document.MediaAssets)
+            {
+                if (string.IsNullOrWhiteSpace(
+                        asset.RelativePath))
+                    continue;
+
+                if (!Path.IsPathRooted(
+                        asset.RelativePath))
+                    continue;
+
+                string sourcePath =
+                    asset.RelativePath;
+
+                if (!File.Exists(sourcePath))
+                    continue;
+
+                string extension =
+                    Path.GetExtension(sourcePath)
+                        .ToLowerInvariant();
+
+                string hash =
+                    await CalculateHashAsync(
+                        sourcePath);
+
+                string safeName =
+                    SanitizeFileName(
+                        asset.Name);
+
+                string destinationFileName =
+                    $"{safeName}_{hash[..8]}{extension}";
+
+                string destinationPath =
+                    Path.Combine(
+                        assetsFolder,
+                        destinationFileName);
+
+                if (!File.Exists(destinationPath))
+                {
+                    await using FileStream source =
+                        File.OpenRead(sourcePath);
+
+                    await using FileStream destination =
+                        File.Create(destinationPath);
+
+                    await source.CopyToAsync(
+                        destination);
+                }
+
+                asset.RelativePath =
+                    Path.GetRelativePath(
+                        projectFolder,
+                        destinationPath)
+                    .Replace(
+                        '\\',
+                        '/');
+            }
         }
 
         public string ResolveAssetPath(
             string relativePath,
             string stageflowFilePath)
         {
+            if (Path.IsPathRooted(relativePath))
+                return Path.GetFullPath(relativePath);
+
             string directory =
                 Path.GetDirectoryName(
                     stageflowFilePath)
@@ -185,6 +331,17 @@ namespace StageFlow.Services
             {
                 File.Delete(path);
             }
+        }
+
+        private static string GetTemporaryAssetsFolder()
+        {
+            string temp =
+                Path.GetTempPath();
+
+            return Path.Combine(
+                temp,
+                "StageFlow",
+                "Assets");
         }
 
         public static bool IsSupported(

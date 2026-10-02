@@ -19,9 +19,9 @@ namespace StageFlow.Models
 
         public string FontFamily { get; set; } = "Inter";
 
-        public double TitleFontSize { get; set; } = 72;
+        public double TitleFontSize { get; set; } = 48;
 
-        public double BodyFontSize { get; set; } = 42;
+        public double BodyFontSize { get; set; } = 75;
 
         public bool TitleBold { get; set; } = true;
 
@@ -37,8 +37,8 @@ namespace StageFlow.Models
                 SecondaryColor = "#B8C0CC",
                 AccentColor = "#4F8CFF",
                 FontFamily = "Inter",
-                TitleFontSize = 72,
-                BodyFontSize = 42,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
             },
 
@@ -50,8 +50,8 @@ namespace StageFlow.Models
                 SecondaryColor = "#CBD5E1",
                 AccentColor = "#60A5FA",
                 FontFamily = "Inter",
-                TitleFontSize = 72,
-                BodyFontSize = 42,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
             },
 
@@ -63,8 +63,8 @@ namespace StageFlow.Models
                 SecondaryColor = "#C9C0AF",
                 AccentColor = "#D6A85F",
                 FontFamily = "Georgia",
-                TitleFontSize = 70,
-                BodyFontSize = 40,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
             },
 
@@ -76,8 +76,8 @@ namespace StageFlow.Models
                 SecondaryColor = "#555555",
                 AccentColor = "#222222",
                 FontFamily = "Inter",
-                TitleFontSize = 68,
-                BodyFontSize = 40,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
             },
 
@@ -89,8 +89,8 @@ namespace StageFlow.Models
                 SecondaryColor = "#B9D8E8",
                 AccentColor = "#22C1DC",
                 FontFamily = "Inter",
-                TitleFontSize = 72,
-                BodyFontSize = 42,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
             },
 
@@ -102,10 +102,165 @@ namespace StageFlow.Models
                 SecondaryColor = "#D8D0E5",
                 AccentColor = "#A78BFA",
                 FontFamily = "Inter",
-                TitleFontSize = 76,
-                BodyFontSize = 44,
+                TitleFontSize = 75,
+                BodyFontSize = 75,
                 TitleBold = true
-            }
+            },
+            new PresentationTheme
+{
+    Name = "Forest",
+    BackgroundColor = "#0B1F17",
+    PrimaryColor = "#F1F8F5",
+    SecondaryColor = "#A7C4B5",
+    AccentColor = "#34D399",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Wine",
+    BackgroundColor = "#240B16",
+    PrimaryColor = "#FFFFFF",
+    SecondaryColor = "#D8B4C4",
+    AccentColor = "#E11D48",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Royal",
+    BackgroundColor = "#15102B",
+    PrimaryColor = "#FFFFFF",
+    SecondaryColor = "#C4B5FD",
+    AccentColor = "#A855F7",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Sunset",
+    BackgroundColor = "#29140A",
+    PrimaryColor = "#FFF7ED",
+    SecondaryColor = "#FDBA74",
+    AccentColor = "#F97316",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Crimson",
+    BackgroundColor = "#1F0808",
+    PrimaryColor = "#FFFFFF",
+    SecondaryColor = "#FCA5A5",
+    AccentColor = "#EF4444",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Teal",
+    BackgroundColor = "#062A2A",
+    PrimaryColor = "#F0FDFA",
+    SecondaryColor = "#99F6E4",
+    AccentColor = "#14B8A6",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Gold",
+    BackgroundColor = "#17130A",
+    PrimaryColor = "#FFFDF5",
+    SecondaryColor = "#D6C79A",
+    AccentColor = "#EAB308",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Arctic",
+    BackgroundColor = "#EAF2F8",
+    PrimaryColor = "#101828",
+    SecondaryColor = "#475467",
+    AccentColor = "#2563EB",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Pure White",
+    BackgroundColor = "#FFFFFF",
+    PrimaryColor = "#111827",
+    SecondaryColor = "#4B5563",
+    AccentColor = "#2563EB",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Warm",
+    BackgroundColor = "#211A16",
+    PrimaryColor = "#FFF8F0",
+    SecondaryColor = "#D6C2B2",
+    AccentColor = "#D97706",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Neon",
+    BackgroundColor = "#09090B",
+    PrimaryColor = "#FAFAFA",
+    SecondaryColor = "#A1A1AA",
+    AccentColor = "#22D3EE",
+    FontFamily = "Inter",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+},
+
+new PresentationTheme
+{
+    Name = "Classic",
+    BackgroundColor = "#000000",
+    PrimaryColor = "#FFFFFF",
+    SecondaryColor = "#D1D5DB",
+    AccentColor = "#FFFFFF",
+    FontFamily = "Arial",
+    TitleFontSize = 75,
+    BodyFontSize = 75,
+    TitleBold = true
+}
             ];
         }
     }

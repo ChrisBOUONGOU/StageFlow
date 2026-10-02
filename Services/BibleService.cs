@@ -64,7 +64,7 @@ namespace StageFlow.Services
             PresentationTheme? theme = null)
         {
             versesPerSlide =
-                Math.Max(1, versesPerSlide);
+       Math.Max(1, versesPerSlide);
 
             var slides = new List<Slide>();
 
@@ -81,10 +81,19 @@ namespace StageFlow.Services
                 var firstVerse = verses.First();
                 var lastVerse = verses.Last();
 
+                var bookName = chapter.BookName;
+
+                if (!string.IsNullOrEmpty(bookName))
+                {
+                    bookName =
+                        char.ToUpper(bookName[0]) +
+                        bookName.Substring(1).ToLower();
+                }
+
                 var reference =
                     firstVerse.Verse == lastVerse.Verse
-                        ? $"{chapter.BookName} {chapter.Number}:{firstVerse.Verse}"
-                        : $"{chapter.BookName} {chapter.Number}:{firstVerse.Verse}-{lastVerse.Verse}";
+                        ? $"{bookName} {chapter.Number}:{firstVerse.Verse}"
+                        : $"{bookName} {chapter.Number}:{firstVerse.Verse}-{lastVerse.Verse}";
 
                 var text = string.Join(
                     Environment.NewLine + Environment.NewLine,
@@ -98,19 +107,40 @@ namespace StageFlow.Services
                         theme?.BackgroundColor ?? "#10131A"
                 };
 
+                // TEXTE BIBLIQUE — AU MILIEU
+                var bodyElement =
+                    new TextElement
+                    {
+                        Name = "Bible Text",
+                        X = 140,
+                        Y = 250,
+                        Width = 1640,
+                        Height = 500,
+                        Text = text,
+                        FontFamily =
+                            theme?.FontFamily ?? "Inter",
+                        FontSize =
+                            theme?.BodyFontSize ?? 75,
+                        Color =
+                            theme?.PrimaryColor ?? "#FFFFFF",
+                        HorizontalAlignment = "Center",
+                        VerticalAlignment = "Center"
+                    };
+
+                // RÉFÉRENCE — EN BAS
                 var titleElement =
                     new TextElement
                     {
                         Name = "Bible Reference",
                         X = 100,
-                        Y = 80,
+                        Y = 850,
                         Width = 1720,
                         Height = 100,
                         Text = reference,
                         FontFamily =
                             theme?.FontFamily ?? "Inter",
                         FontSize =
-                            theme?.TitleFontSize ?? 42,
+                            theme?.TitleFontSize ?? 52,
                         IsBold = true,
                         Color =
                             theme?.AccentColor ?? "#4F8CFF",
@@ -118,27 +148,8 @@ namespace StageFlow.Services
                         VerticalAlignment = "Center"
                     };
 
-                var bodyElement =
-                    new TextElement
-                    {
-                        Name = "Bible Text",
-                        X = 140,
-                        Y = 230,
-                        Width = 1640,
-                        Height = 720,
-                        Text = text,
-                        FontFamily =
-                            theme?.FontFamily ?? "Inter",
-                        FontSize =
-                            theme?.BodyFontSize ?? 46,
-                        Color =
-                            theme?.PrimaryColor ?? "#FFFFFF",
-                        HorizontalAlignment = "Center",
-                        VerticalAlignment = "Center"
-                    };
-
-                slide.Elements.Add(titleElement);
                 slide.Elements.Add(bodyElement);
+                slide.Elements.Add(titleElement);
 
                 slides.Add(slide);
             }
