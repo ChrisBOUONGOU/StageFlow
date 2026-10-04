@@ -11,7 +11,7 @@ using StageFlow.Models;
 using StageFlow.Services;
 using StageFlow.ViewModels;
 using System.Diagnostics;
-
+using Avalonia.Controls.Primitives;
 
 
 
@@ -145,9 +145,63 @@ public partial class SlideCanvas : UserControl
             if (Editor?.SelectedElement == element)
             {
                 AddSelectionBox(element);
+
+                if (element is TextElement text)
+                {
+                    AddTextToolbar(text);
+                }
             }
         }
     }
+
+
+private void AddTextToolbar(TextElement text)
+    {
+        var toolbar = CreateTextToolbar(text);
+
+        EditorCanvas.Children.Add(toolbar);
+
+        toolbar.Measure(new Size(
+            double.PositiveInfinity,
+            double.PositiveInfinity));
+
+        double toolbarWidth =
+            toolbar.DesiredSize.Width;
+
+        double toolbarHeight =
+            toolbar.DesiredSize.Height;
+
+        double x =
+            text.X +
+            (text.Width - toolbarWidth) / 2;
+
+        double y =
+            text.Y -
+            toolbarHeight -
+            12;
+
+        // Si la toolbar dépasse à gauche
+        if (x < 5)
+            x = 5;
+
+        // Si elle dépasse à droite
+        if (x + toolbarWidth > 1920)
+            x = 1920 - toolbarWidth - 5;
+
+        // Si elle dépasse en haut,
+        // on la place sous le texte
+        if (y < 5)
+        {
+            y = text.Y +
+                text.Height +
+                12;
+        }
+
+        Canvas.SetLeft(toolbar, x);
+        Canvas.SetTop(toolbar, y);
+    }
+
+
 
     private Control? CreateElementControl(
         SlideElement element)
@@ -170,6 +224,218 @@ public partial class SlideCanvas : UserControl
 
         return control;
     }
+
+
+private Control CreateTextToolbar(TextElement text)
+    {
+        var toolbar = new Border
+        {
+            Background = Brush.Parse("#20242D"),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(6),
+            Tag = "TextToolbar",
+            ZIndex = 20000
+        };
+
+        var panel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 4
+        };
+
+        // =====================================================
+        // DIMINUER LA TAILLE
+        // =====================================================
+
+        var decreaseButton = new Button
+        {
+            Content = "A−",
+            Width = 36,
+            Height = 32
+        };
+
+        decreaseButton.Click += (_, _) =>
+        {
+            if (Editor?.SelectedElement is not TextElement)
+                return;
+
+            Editor.SelectedFontSize =
+                Math.Max(8, Editor.SelectedFontSize - 2);
+        };
+
+        panel.Children.Add(decreaseButton);
+
+        // =====================================================
+        // TAILLE
+        // =====================================================
+
+        var fontSizeBox = new TextBox
+        {
+            Width = 48,
+            Height = 32,
+            Text = Editor?.SelectedFontSize.ToString("0") ?? "48",
+            HorizontalContentAlignment =
+                HorizontalAlignment.Center,
+            VerticalContentAlignment =
+                VerticalAlignment.Center
+        };
+
+        fontSizeBox.KeyDown += (_, e) =>
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            if (double.TryParse(
+                    fontSizeBox.Text,
+                    out double size))
+            {
+                if (Editor != null)
+                {
+                    Editor.SelectedFontSize =
+                        Math.Max(8, size);
+                }
+            }
+
+            e.Handled = true;
+        };
+
+        panel.Children.Add(fontSizeBox);
+
+        // =====================================================
+        // AUGMENTER LA TAILLE
+        // =====================================================
+
+        var increaseButton = new Button
+        {
+            Content = "A+",
+            Width = 36,
+            Height = 32
+        };
+
+        increaseButton.Click += (_, _) =>
+        {
+            if (Editor?.SelectedElement is not TextElement)
+                return;
+
+            Editor.SelectedFontSize += 2;
+        };
+
+        panel.Children.Add(increaseButton);
+
+        // =====================================================
+        // BOLD
+        // =====================================================
+
+        var boldButton = new ToggleButton
+        {
+            Content = "B",
+            Width = 34,
+            Height = 32,
+            FontWeight = FontWeight.Bold,
+            IsChecked = text.IsBold
+        };
+
+        boldButton.Click += (_, _) =>
+        {
+            if (Editor == null)
+                return;
+
+            Editor.SelectedBold =
+                boldButton.IsChecked == true;
+        };
+
+        panel.Children.Add(boldButton);
+
+        // =====================================================
+        // ITALIC
+        // =====================================================
+
+        var italicButton = new ToggleButton
+        {
+            Content = "I",
+            Width = 34,
+            Height = 32,
+            FontStyle = FontStyle.Italic,
+            IsChecked = text.IsItalic
+        };
+
+        italicButton.Click += (_, _) =>
+        {
+            if (Editor == null)
+                return;
+
+            Editor.SelectedItalic =
+                italicButton.IsChecked == true;
+        };
+
+        panel.Children.Add(italicButton);
+
+        // =====================================================
+        // COULEUR
+        // =====================================================
+
+        var colorButton = new Button
+        {
+            Content = "●",
+            Width = 34,
+            Height = 32,
+            Foreground = Brush.Parse(text.Color)
+        };
+
+        colorButton.Click += (_, _) =>
+        {
+            ShowTextColorPicker(colorButton);
+        };
+
+        panel.Children.Add(colorButton);
+
+        toolbar.Child = panel;
+
+        return toolbar;
+    }
+
+
+
+private void ShowTextColorPicker(Button target)
+    {
+        if (Editor?.SelectedElement is not TextElement text)
+            return;
+
+        var colorPicker = new ColorPicker
+        {
+            Color = Color.Parse(text.Color),
+            Width = 250,
+            Height = 300
+        };
+
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            HorizontalOffset = 0,
+            VerticalOffset = 5,
+            IsLightDismissEnabled = true,
+            Child = colorPicker
+        };
+
+        colorPicker.ColorChanged += (_, e) =>
+        {
+            if (Editor?.SelectedElement is not TextElement selectedText)
+                return;
+
+            // Utilise ton EditorViewModel existant
+            Editor.SelectedColorValue = e.NewColor;
+
+            // Met à jour immédiatement le bouton
+            target.Foreground =
+                new SolidColorBrush(e.NewColor);
+        };
+
+        popup.Open();
+    }
+
+
+
 
     private Control CreateTextControl(TextElement text)
     {
@@ -847,6 +1113,7 @@ public partial class SlideCanvas : UserControl
             }
 
             if (control.Tag is HandleData handleData &&
+
                 handleData.Element.Id == element.Id)
             {
                 UpdateHandlePosition(
@@ -854,8 +1121,62 @@ public partial class SlideCanvas : UserControl
                     element,
                     handleData.Position);
             }
+
+
+            if (control.Tag is string toolbarTag &&
+            toolbarTag == "TextToolbar" &&
+            element is TextElement text)
+            {
+                UpdateTextToolbarPosition(
+                    control,
+                    text);
+            }
         }
     }
+
+
+private void UpdateTextToolbarPosition(
+    Control toolbar,
+    TextElement text)
+    {
+        toolbar.Measure(new Size(
+            double.PositiveInfinity,
+            double.PositiveInfinity));
+
+        double toolbarWidth =
+            toolbar.DesiredSize.Width;
+
+        double toolbarHeight =
+            toolbar.DesiredSize.Height;
+
+        double x =
+            text.X +
+            (text.Width - toolbarWidth) / 2;
+
+        double y =
+            text.Y -
+            toolbarHeight -
+            12;
+
+        if (x < 5)
+            x = 5;
+
+        if (x + toolbarWidth > 1920)
+            x = 1920 - toolbarWidth - 5;
+
+        if (y < 5)
+        {
+            y =
+                text.Y +
+                text.Height +
+                12;
+        }
+
+        Canvas.SetLeft(toolbar, x);
+        Canvas.SetTop(toolbar, y);
+    }
+
+
 
     private static void UpdateHandlePosition(
     Control handle,
@@ -1137,7 +1458,8 @@ public partial class SlideCanvas : UserControl
             FontFamily = new FontFamily(textElement.FontFamily),
             FontSize = textElement.FontSize,
             Background = Brushes.Transparent,
-            Foreground = Brushes.White,
+            Foreground = Brushes.Black,
+   
             BorderThickness = new Avalonia.Thickness(1),
             BorderBrush = Brushes.DeepSkyBlue,
             Padding = new Avalonia.Thickness(4),
