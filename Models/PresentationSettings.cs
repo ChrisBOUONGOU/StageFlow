@@ -6,9 +6,9 @@ namespace StageFlow.Models
 {
     public sealed class PresentationSettings
     {
-        public int Width { get; set; } = 870;
+        public int Width { get; set; } = 1010;
 
-        public int Height { get; set; } = 485;
+        public int Height { get; set; } = 570;
 
         public string BackgroundColor { get; set; } = "#000000";
 

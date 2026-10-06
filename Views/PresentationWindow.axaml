@@ -2,11 +2,14 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="StageFlow.Views.PresentationWindow"
+
     Background="Black"
+
     SystemDecorations="None"
     WindowState="FullScreen"
     CanResize="False"
     ShowInTaskbar="False"
+
     KeyDown="PresentationWindow_KeyDown"
     PointerPressed="PresentationWindow_PointerPressed">
 
@@ -15,15 +18,27 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
 
+		<!--
+            Le slide fait toujours 1920x1080.
+            Le Viewbox l'adapte à la résolution
+            réelle de l'écran.
+        -->
 		<Viewbox
-            Stretch="UniformToFill"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+            Stretch="Uniform"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
 
 			<ContentControl
                 x:Name="SlideContent"
+
+                Width="1920"
+                Height="1080"
+
                 HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch"/>
+                VerticalContentAlignment="Stretch"
+
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"/>
 
 		</Viewbox>
 

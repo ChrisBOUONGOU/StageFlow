@@ -25,6 +25,10 @@ public partial class PresentationWindow : Window
 
         _viewModel = viewModel;
 
+        // =====================================================
+        // MODE PLEIN ÉCRAN
+        // =====================================================
+
         WindowState =
             WindowState.FullScreen;
 
@@ -35,14 +39,26 @@ public partial class PresentationWindow : Window
 
         ShowInTaskbar = false;
 
+        // =====================================================
+        // ÉCOUTE DES CHANGEMENTS DE SLIDE
+        // =====================================================
+
         _viewModel.PropertyChanged +=
             ViewModel_PropertyChanged;
 
         Opened +=
             PresentationWindow_Opened;
 
+        // =====================================================
+        // AFFICHAGE INITIAL
+        // =====================================================
+
         UpdateSlide();
     }
+
+    // =========================================================
+    // OUVERTURE DE LA PRÉSENTATION
+    // =========================================================
 
     private void PresentationWindow_Opened(
         object? sender,
@@ -58,6 +74,10 @@ public partial class PresentationWindow : Window
         UpdateSlide();
     }
 
+    // =========================================================
+    // CHANGEMENT DU SLIDE
+    // =========================================================
+
     private void ViewModel_PropertyChanged(
         object? sender,
         System.ComponentModel
@@ -71,8 +91,16 @@ public partial class PresentationWindow : Window
         }
     }
 
+    // =========================================================
+    // RENDU DU SLIDE
+    // =========================================================
+
     private void UpdateSlide()
     {
+        // Arrêter et remettre les vidéos du slide précédent
+        // au début avant de construire le nouveau slide.
+        SlideRenderer.StopAllVideos();
+
         var slide =
             _viewModel.SelectedSlide;
 
@@ -105,6 +133,7 @@ public partial class PresentationWindow : Window
                 NextSlide();
 
                 e.Handled = true;
+
                 break;
 
             case Key.Left:
@@ -113,6 +142,7 @@ public partial class PresentationWindow : Window
                 PreviousSlide();
 
                 e.Handled = true;
+
                 break;
 
             case Key.Home:
@@ -120,6 +150,7 @@ public partial class PresentationWindow : Window
                 FirstSlide();
 
                 e.Handled = true;
+
                 break;
 
             case Key.End:
@@ -127,6 +158,7 @@ public partial class PresentationWindow : Window
                 LastSlide();
 
                 e.Handled = true;
+
                 break;
 
             case Key.Escape:
@@ -134,12 +166,13 @@ public partial class PresentationWindow : Window
                 Close();
 
                 e.Handled = true;
+
                 break;
         }
     }
 
     // =========================================================
-    // MOUSE
+    // SOURIS
     // =========================================================
 
     private void PresentationWindow_PointerPressed(
@@ -149,6 +182,10 @@ public partial class PresentationWindow : Window
         var properties =
             e.GetCurrentPoint(this)
                 .Properties;
+
+        // -----------------------------------------------------
+        // CLIC GAUCHE = SLIDE SUIVANT
+        // -----------------------------------------------------
 
         if (properties.PointerUpdateKind ==
             PointerUpdateKind.LeftButtonPressed)
@@ -160,6 +197,10 @@ public partial class PresentationWindow : Window
             return;
         }
 
+        // -----------------------------------------------------
+        // CLIC DROIT = SLIDE PRÉCÉDENT
+        // -----------------------------------------------------
+
         if (properties.PointerUpdateKind ==
             PointerUpdateKind.RightButtonPressed)
         {
@@ -170,7 +211,7 @@ public partial class PresentationWindow : Window
     }
 
     // =========================================================
-    // NAVIGATION
+    // SLIDE SUIVANT
     // =========================================================
 
     private void NextSlide()
@@ -196,6 +237,10 @@ public partial class PresentationWindow : Window
             _viewModel.Slides[index + 1];
     }
 
+    // =========================================================
+    // SLIDE PRÉCÉDENT
+    // =========================================================
+
     private void PreviousSlide()
     {
         if (_viewModel.Slides.Count == 0)
@@ -215,6 +260,10 @@ public partial class PresentationWindow : Window
             _viewModel.Slides[index - 1];
     }
 
+    // =========================================================
+    // PREMIER SLIDE
+    // =========================================================
+
     private void FirstSlide()
     {
         if (_viewModel.Slides.Count == 0)
@@ -223,6 +272,10 @@ public partial class PresentationWindow : Window
         _viewModel.SelectedSlide =
             _viewModel.Slides[0];
     }
+
+    // =========================================================
+    // DERNIER SLIDE
+    // =========================================================
 
     private void LastSlide()
     {
@@ -235,7 +288,7 @@ public partial class PresentationWindow : Window
     }
 
     // =========================================================
-    // CLOSE
+    // FERMETURE
     // =========================================================
 
     protected override void OnClosed(
@@ -243,6 +296,9 @@ public partial class PresentationWindow : Window
     {
         _viewModel.PropertyChanged -=
             ViewModel_PropertyChanged;
+
+        // Nettoyage des vidéos de présentation
+        SlideRenderer.StopAllVideos();
 
         base.OnClosed(e);
     }
