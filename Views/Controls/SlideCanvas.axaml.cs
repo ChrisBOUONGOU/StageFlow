@@ -43,6 +43,8 @@ public partial class SlideCanvas : UserControl
     private readonly LibVLC _libVLC;
     private readonly Dictionary<Guid, MediaPlayer> _videoPlayers = new();
 
+
+
     public SlideCanvas()
     {
         InitializeComponent();
@@ -111,6 +113,11 @@ public partial class SlideCanvas : UserControl
 
     private void RenderCanvas()
     {
+        // IMPORTANT :
+        // arrêter et remettre les vidéos au début
+        // avant de supprimer les anciens VideoView.
+        ResetVideoPlayers();
+
         EditorCanvas.Children.Clear();
 
         var slide = Editor?.CurrentSlide;
@@ -125,22 +132,34 @@ public partial class SlideCanvas : UserControl
                      .Where(x => x.IsVisible)
                      .OrderBy(x => x.ZIndex))
         {
-            Control control =
+            Control? control =
                 CreateElementControl(element);
 
-            Canvas.SetLeft(control, element.X);
-            Canvas.SetTop(control, element.Y);
+            if (control == null)
+                continue;
 
-            control.Width = element.Width;
-            control.Height = element.Height;
+            Canvas.SetLeft(
+                control,
+                element.X);
 
-            control.Opacity = element.Opacity;
+            Canvas.SetTop(
+                control,
+                element.Y);
 
-            control.Tag = element;
+            control.Width =
+                element.Width;
 
-           
+            control.Height =
+                element.Height;
 
-            EditorCanvas.Children.Add(control);
+            control.Opacity =
+                element.Opacity;
+
+            control.Tag =
+                element;
+
+            EditorCanvas.Children.Add(
+                control);
 
             if (Editor?.SelectedElement == element)
             {
@@ -151,11 +170,44 @@ public partial class SlideCanvas : UserControl
                     AddTextToolbar(text);
                 }
             }
+
+            // IMPORTANT :
+            // Le VideoView est maintenant attaché
+            // au Canvas avant de lancer la vidéo.
+            if (element is VideoElement video &&
+                video.AutoPlay)
+            {
+                StartVideo(video);
+            }
+        }
+    }
+
+    private void ResetVideoPlayers()
+    {
+        foreach (var player in _videoPlayers.Values)
+        {
+            try
+            {
+                if (player.IsPlaying)
+                {
+                    player.Stop();
+                }
+
+                if (player.Media != null)
+                {
+                    player.Time = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"Video reset error: {ex}");
+            }
         }
     }
 
 
-private void AddTextToolbar(TextElement text)
+    private void AddTextToolbar(TextElement text)
     {
         var toolbar = CreateTextToolbar(text);
 
@@ -589,11 +641,17 @@ private void ShowTextColorPicker(Button target)
 
     private Control CreateVideoControl(VideoElement video)
     {
-        if (string.IsNullOrWhiteSpace(video.Source))
-            return CreateImagePlaceholder("VIDEO", "#202631");
+        if (string.IsNullOrWhiteSpace(
+            video.Source))
+        {
+            return CreateImagePlaceholder(
+                "VIDEO",
+                "#202631");
+        }
 
         if (Editor == null ||
-            string.IsNullOrWhiteSpace(Editor.MainViewModel.CurrentFilePath))
+            string.IsNullOrWhiteSpace(
+                Editor.MainViewModel.CurrentFilePath))
         {
             return CreateImagePlaceholder(
                 "VIDEO PATH NOT AVAILABLE",
@@ -602,34 +660,41 @@ private void ShowTextColorPicker(Button target)
 
         try
         {
-            var assetService = new AssetService();
+            var assetService =
+                new AssetService();
 
-            string videoPath = assetService.ResolveAssetPath(
-                video.Source,
-                Editor.MainViewModel.CurrentFilePath);
+            string videoPath =
+                assetService.ResolveAssetPath(
+                    video.Source,
+                    Editor.MainViewModel.CurrentFilePath);
 
             if (!File.Exists(videoPath))
+            {
                 return CreateImagePlaceholder(
                     "VIDEO NOT FOUND",
                     "#3A2020");
+            }
+
+            // =================================================
+            // MEDIAPLAYER
+            // =================================================
 
             if (!_videoPlayers.TryGetValue(
                     video.Id,
                     out MediaPlayer? mediaPlayer))
             {
-                mediaPlayer = new MediaPlayer(_libVLC);
-                _videoPlayers[video.Id] = mediaPlayer;
+                mediaPlayer =
+                    new MediaPlayer(
+                        _libVLC);
+
+                _videoPlayers[
+                    video.Id] =
+                    mediaPlayer;
             }
 
-            var videoView = new LibVLCSharp.Avalonia.VideoView
-            {
-                MediaPlayer = mediaPlayer,
-
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-
-                IsHitTestVisible = false
-            };
+            // =================================================
+            // MEDIA
+            // =================================================
 
             if (mediaPlayer.Media == null)
             {
@@ -642,31 +707,67 @@ private void ShowTextColorPicker(Button target)
             }
 
             mediaPlayer.Volume =
-                (int)Math.Clamp(video.Volume * 100, 0, 100);
+                (int)Math.Clamp(
+                    video.Volume * 100,
+                    0,
+                    100);
 
-            if (video.AutoPlay && !mediaPlayer.IsPlaying)
-                mediaPlayer.Play();
+            // =================================================
+            // VIDEOVIEW
+            // =================================================
+
+            var videoView =
+    new LibVLCSharp.Avalonia.VideoView
+    {
+        MediaPlayer = mediaPlayer,
+
+        HorizontalAlignment =
+            HorizontalAlignment.Stretch,
+
+        VerticalAlignment =
+            VerticalAlignment.Stretch,
+
+        IsHitTestVisible = false
+    };
+
+            // =================================================
+            // CONTAINER
+            // =================================================
 
             return new Border
             {
-                Width = video.Width,
-                Height = video.Height,
+                Width =
+                    video.Width,
 
-                Background = Brushes.Black,
+                Height =
+                    video.Height,
 
-                BorderBrush = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
+                Background =
+                    Brushes.Black,
 
-                Padding = new Thickness(0),
+                BorderBrush =
+                    Brushes.Transparent,
 
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
+                BorderThickness =
+                    new Thickness(0),
 
-                Opacity = video.Opacity,
+                Padding =
+                    new Thickness(0),
 
-                IsHitTestVisible = true,
+                HorizontalAlignment =
+                    HorizontalAlignment.Stretch,
 
-                Child = videoView
+                VerticalAlignment =
+                    VerticalAlignment.Stretch,
+
+                Opacity =
+                    video.Opacity,
+
+                IsHitTestVisible =
+                    true,
+
+                Child =
+                    videoView
             };
         }
         catch (Exception ex)
@@ -1412,6 +1513,44 @@ private void UpdateTextToolbarPosition(
             e.Handled = true;
         }
     }
+
+    private void StartVideo(
+    VideoElement video)
+    {
+        if (!_videoPlayers.TryGetValue(
+           video.Id,
+           out MediaPlayer? player))
+        {
+            return;
+        }
+
+        try
+        {
+            if (player.Media == null)
+                return;
+
+            // Toujours recommencer au début
+            player.Time = 0;
+
+            // Lancer après que le VideoView
+            // a été ajouté au Canvas.
+            player.Play();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(
+                $"Video start error: {ex}");
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(
+    VisualTreeAttachmentEventArgs e)
+    {
+        ResetVideoPlayers();
+
+        base.OnDetachedFromVisualTree(e);
+    }
+
 
     private sealed class HandleData
     {

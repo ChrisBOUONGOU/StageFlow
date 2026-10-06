@@ -163,13 +163,18 @@
 					Grid.Column="3"
 					Content="Video"
 					Click="AddVideo_Click"/>
-				
-				
-
-				<Border Grid.Column="4"/>
 
 				<Button
-					Grid.Column="5"
+					Grid.Column="4"
+					Content="Import"
+					Click="ImportProject_Click"/>
+				
+				
+
+				<Border Grid.Column="5"/>
+
+				<Button
+					Grid.Column="6"
 					Content="Presentation"
 					Click="OpenPresentation_Click"
 					Margin="5,0"
@@ -178,7 +183,7 @@
 			
 
 				<Button
-                    Grid.Column="6"
+                    Grid.Column="7"
                     Content="Save"
                     Command="{Binding SaveProjectCommand}"
                     Margin="10,0"/>
