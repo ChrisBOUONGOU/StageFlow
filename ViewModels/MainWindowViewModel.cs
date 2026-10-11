@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -277,31 +278,78 @@ namespace StageFlow.ViewModels
         {
             if (string.IsNullOrWhiteSpace(CurrentFilePath))
             {
-                string directory =
-                    Path.Combine(
-                        Environment.GetFolderPath(
-                            Environment.SpecialFolder.MyDocuments),
-                        "StageFlow");
+                Window? window =
+                    App.Current?.ApplicationLifetime
+                        is Avalonia.Controls.ApplicationLifetimes
+                            .IClassicDesktopStyleApplicationLifetime desktop
+                        ? desktop.MainWindow
+                        : null;
 
-                Directory.CreateDirectory(directory);
+                if (window is null)
+                {
+                    StatusText = "Unable to open the Save dialog.";
+                    return;
+                }
 
-                CurrentFilePath =
-                    Path.Combine(
-                        directory,
-                        $"{Sanitize(ProjectName)}.stageflow.json");
+                var file = await window.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
+                    {
+                        Title = "Save StageFlow project",
+                        SuggestedFileName = $"{Sanitize(ProjectName)}.stageflow.json",
+                        DefaultExtension = "stageflow.json",
+                        FileTypeChoices =
+                        [
+                            new FilePickerFileType("StageFlow project")
+                            {
+                                Patterns = ["*.stageflow.json"]
+                            }
+                        ]
+                    });
+
+                if (file is null)
+                    return;
+
+                CurrentFilePath = file.TryGetLocalPath();
+                if (string.IsNullOrWhiteSpace(CurrentFilePath))
+                {
+                    StatusText = "Unable to access the selected save location.";
+                    return;
+                }
             }
-            
-                await MediaLibrary.ConvertTemporaryAssetsToProjectAsync(
-                    CurrentFilePath);
 
-            await _projectService.SaveAsync(
-                Document,
-                CurrentFilePath);
+            await MediaLibrary.ConvertTemporaryAssetsToProjectAsync(CurrentFilePath);
+            await _projectService.SaveAsync(Document, CurrentFilePath);
+            MediaLibrary.Refresh();
+            Editor.RefreshCanvas();
+
+            StatusText = $"Saved: {Path.GetFileName(CurrentFilePath)}";
+        }
+
+        public async Task LoadProjectAsync(string filePath)
+        {
+            PresentationDocument loaded = await _projectService.LoadAsync(filePath);
+
+            Document.Name = loaded.Name;
+            Document.CreatedAt = loaded.CreatedAt;
+            Document.ModifiedAt = loaded.ModifiedAt;
+            Document.Settings = loaded.Settings;
+            Document.MediaAssets = loaded.MediaAssets;
+            Document.Slides = loaded.Slides;
+
+            Slides.Clear();
+            foreach (Slide slide in loaded.Slides)
+                Slides.Add(slide);
+
+            CurrentFilePath = Path.GetFullPath(filePath);
+            SelectedSlide = Slides.FirstOrDefault();
+            LiveSlide = null;
 
             MediaLibrary.Refresh();
+            Editor.SelectedElement = null;
+            Editor.RefreshCanvas();
+            RefreshSlides();
 
-            StatusText =
-                $"Saved: {Path.GetFileName(CurrentFilePath)}";
+            StatusText = $"Imported: {Path.GetFileName(filePath)}";
         }
 
         private static string Sanitize(string value)
