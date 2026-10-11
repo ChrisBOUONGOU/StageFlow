@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using StageFlow.Models;
 using StageFlow.Services;
 using StageFlow.ViewModels;
@@ -197,6 +198,47 @@ namespace StageFlow.Views
             _presentationWindow.Show();
 
             _presentationWindow.Activate();
+        }
+
+        private async void ImportProject_Click(
+            object? sender,
+            RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel viewModel)
+                return;
+
+            var files = await StorageProvider.OpenFilePickerAsync(
+                new FilePickerOpenOptions
+                {
+                    Title = "Import StageFlow project",
+                    AllowMultiple = false,
+                    FileTypeFilter =
+                    [
+                        new FilePickerFileType("StageFlow projects")
+                        {
+                            Patterns = ["*.stageflow.json", "*.json"]
+                        }
+                    ]
+                });
+
+            if (files.Count == 0)
+                return;
+
+            string? path = files[0].TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                viewModel.SetStatus("Unable to access the selected project file.");
+                return;
+            }
+
+            try
+            {
+                await viewModel.LoadProjectAsync(path);
+            }
+            catch (Exception ex)
+            {
+                viewModel.SetStatus($"Project import failed: {ex.Message}");
+            }
         }
 
         private async void AddImage_Click(

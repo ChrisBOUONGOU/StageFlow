@@ -555,11 +555,6 @@ namespace StageFlow.ViewModels
                 }
             }
 
-            if (importedCount > 0)
-            {
-                await _mainViewModel.SaveProjectCommand.ExecuteAsync(null);
-            }
-
             _mainViewModel.StatusText =
                 $"{importedCount} {fileTypeName.ToLower()} imported.";
 

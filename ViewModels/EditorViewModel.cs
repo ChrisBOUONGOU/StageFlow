@@ -861,15 +861,6 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
             if (CurrentSlide == null)
                 return;
 
-            if (string.IsNullOrWhiteSpace(
-                    _mainViewModel.CurrentFilePath))
-            {
-                StatusMessage =
-                    "Save the project before importing media.";
-
-                return;
-            }
-
             Window? window =
                 App.Current?.ApplicationLifetime
                     is Avalonia.Controls
@@ -923,17 +914,25 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
             try
             {
                 MediaAsset asset =
-                    await _assetService.ImportAssetAsync(
-                        sourcePath,
-                        _mainViewModel.CurrentFilePath);
+                    string.IsNullOrWhiteSpace(_mainViewModel.CurrentFilePath)
+                        ? await _assetService.ImportTemporaryAssetAsync(sourcePath)
+                        : await _assetService.ImportAssetAsync(
+                            sourcePath,
+                            _mainViewModel.CurrentFilePath);
 
-                _mainViewModel.Document.MediaAssets.Add(
-                    asset);
+                bool alreadyExists =
+                    _mainViewModel.Document.MediaAssets.Any(existing =>
+                        existing.RelativePath == asset.RelativePath);
+
+                if (!alreadyExists)
+                    _mainViewModel.Document.MediaAssets.Add(asset);
 
                 asset.AbsolutePath =
-    _assetService.ResolveAssetPath(
-        asset.RelativePath,
-        _mainViewModel.CurrentFilePath);
+                    string.IsNullOrWhiteSpace(_mainViewModel.CurrentFilePath)
+                        ? asset.RelativePath
+                        : _assetService.ResolveAssetPath(
+                            asset.RelativePath,
+                            _mainViewModel.CurrentFilePath);
 
                 var image = new ImageElement
                 {
@@ -975,15 +974,6 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
         {
             if (CurrentSlide == null)
                 return;
-
-            if (string.IsNullOrWhiteSpace(
-                    _mainViewModel.CurrentFilePath))
-            {
-                StatusMessage =
-                    "Save the project before importing media.";
-
-                return;
-            }
 
             Window? window =
                 App.Current?.ApplicationLifetime
@@ -1038,9 +1028,11 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
             try
             {
                 MediaAsset asset =
-                    await _assetService.ImportAssetAsync(
-                        sourcePath,
-                        _mainViewModel.CurrentFilePath);
+                    string.IsNullOrWhiteSpace(_mainViewModel.CurrentFilePath)
+                        ? await _assetService.ImportTemporaryAssetAsync(sourcePath)
+                        : await _assetService.ImportAssetAsync(
+                            sourcePath,
+                            _mainViewModel.CurrentFilePath);
 
                 bool alreadyExists =
                     _mainViewModel.Document.MediaAssets
@@ -1054,9 +1046,11 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
                 }
 
                 asset.AbsolutePath =
-                    _assetService.ResolveAssetPath(
-                        asset.RelativePath,
-                        _mainViewModel.CurrentFilePath);
+                    string.IsNullOrWhiteSpace(_mainViewModel.CurrentFilePath)
+                        ? asset.RelativePath
+                        : _assetService.ResolveAssetPath(
+                            asset.RelativePath,
+                            _mainViewModel.CurrentFilePath);
 
                 var video = new VideoElement
                 {
