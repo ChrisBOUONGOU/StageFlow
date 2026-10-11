@@ -284,13 +284,30 @@ namespace StageFlow.Services
                         destination);
                 }
 
-                asset.RelativePath =
+                string newRelativePath =
                     Path.GetRelativePath(
                         projectFolder,
                         destinationPath)
-                    .Replace(
-                        '\\',
-                        '/');
+                    .Replace('\\', '/');
+
+                foreach (Slide slide in document.Slides)
+                {
+                    foreach (SlideElement element in slide.Elements)
+                    {
+                        if (element is ImageElement image &&
+                            string.Equals(image.Source, sourcePath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            image.Source = newRelativePath;
+                        }
+                        else if (element is VideoElement video &&
+                                 string.Equals(video.Source, sourcePath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Source = newRelativePath;
+                        }
+                    }
+                }
+
+                asset.RelativePath = newRelativePath;
             }
         }
 
