@@ -345,6 +345,14 @@ namespace StageFlow.ViewModels
             LiveSlide = null;
 
             MediaLibrary.Refresh();
+            Theme.SelectedTheme =
+                Theme.Themes.FirstOrDefault(theme =>
+                    string.Equals(
+                        theme.Name,
+                        Document.Settings.ThemeName,
+                        StringComparison.OrdinalIgnoreCase))
+                ?? Theme.Themes.FirstOrDefault();
+
             Editor.SelectedElement = null;
             Editor.RefreshCanvas();
             RefreshSlides();
