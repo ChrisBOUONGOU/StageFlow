@@ -95,60 +95,60 @@ internal static class TextFormattingDialog
                 length = rememberedSelectionLength;
             }
 
-        void ApplyToSelection(Action<TextRun> apply)
-        {
-            int start = editor.SelectionStart;
-            int length = editor.SelectionEnd - editor.SelectionStart;
-            if (length <= 0)
+            void ApplyToSelection(Action<TextRun> apply)
             {
-                status.Text = "Sélectionne d'abord les caractères à modifier.";
-                return;
+                int start = editor.SelectionStart;
+                int length = editor.SelectionEnd - editor.SelectionStart;
+                if (length <= 0)
+                {
+                    status.Text = "Sélectionne d'abord les caractères à modifier.";
+                    return;
+                }
+
+                workingRuns = ApplyRunStyle(editor.Text ?? string.Empty, workingRuns,
+                    start, length, textElement, apply);
+                status.Text = "Style appliqué à la sélection. Tu peux en sélectionner une autre.";
             }
 
-            workingRuns = ApplyRunStyle(editor.Text ?? string.Empty, workingRuns,
-                start, length, textElement, apply);
-            status.Text = "Style appliqué à la sélection. Tu peux en sélectionner une autre.";
-        }
-
-        var boldButton = new Button { Content = "B", FontWeight = FontWeight.Bold };
-        boldButton.Click += (_, _) => ApplyToSelection(run => run.IsBold = !run.IsBold);
-        var italicButton = new Button { Content = "I", FontStyle = FontStyle.Italic };
-        italicButton.Click += (_, _) => ApplyToSelection(run => run.IsItalic = !run.IsItalic);
-        var sizeButton = new Button { Content = "Appliquer la taille" };
-        sizeButton.Click += (_, _) =>
-        {
-            if (double.TryParse(sizeBox.Text, out double size) && size >= 8 && size <= 300)
-                ApplyToSelection(run => run.FontSize = size);
-            else
-                status.Text = "Entre une taille comprise entre 8 et 300.";
-        };
-        var colorButton = new Button { Content = "Appliquer la couleur" };
-        colorButton.Click += (_, _) => ApplyToSelection(run => run.Color = selectedColor.ToString());
-
-        var actions = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 8,
-            Children = { boldButton, italicButton, sizeBox, sizeButton }
-        };
-        var saveButton = new Button { Content = "Appliquer et fermer", HorizontalAlignment = HorizontalAlignment.Right };
-        var cancelButton = new Button { Content = "Annuler", HorizontalAlignment = HorizontalAlignment.Right };
-
-        var window = new Window
-        {
-            Title = "Mise en forme du texte",
-            Width = 620,
-            Height = 560,
-            MinWidth = 480,
-            MinHeight = 420,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Content = new ScrollViewer
+            var boldButton = new Button { Content = "B", FontWeight = FontWeight.Bold };
+            boldButton.Click += (_, _) => ApplyToSelection(run => run.IsBold = !run.IsBold);
+            var italicButton = new Button { Content = "I", FontStyle = FontStyle.Italic };
+            italicButton.Click += (_, _) => ApplyToSelection(run => run.IsItalic = !run.IsItalic);
+            var sizeButton = new Button { Content = "Appliquer la taille" };
+            sizeButton.Click += (_, _) =>
             {
-                Content = new StackPanel
+                if (double.TryParse(sizeBox.Text, out double size) && size >= 8 && size <= 300)
+                    ApplyToSelection(run => run.FontSize = size);
+                else
+                    status.Text = "Entre une taille comprise entre 8 et 300.";
+            };
+            var colorButton = new Button { Content = "Appliquer la couleur" };
+            colorButton.Click += (_, _) => ApplyToSelection(run => run.Color = selectedColor.ToString());
+
+            var actions = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 8,
+                Children = { boldButton, italicButton, sizeBox, sizeButton }
+            };
+            var saveButton = new Button { Content = "Appliquer et fermer", HorizontalAlignment = HorizontalAlignment.Right };
+            var cancelButton = new Button { Content = "Annuler", HorizontalAlignment = HorizontalAlignment.Right };
+
+            var window = new Window
+            {
+                Title = "Mise en forme du texte",
+                Width = 620,
+                Height = 560,
+                MinWidth = 480,
+                MinHeight = 420,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new ScrollViewer
                 {
-                    Margin = new Thickness(16),
-                    Spacing = 12,
-                    Children =
+                    Content = new StackPanel
+                    {
+                        Margin = new Thickness(16),
+                        Spacing = 12,
+                        Children =
                     {
                         new TextBlock { Text = "Texte — sélectionne les caractères à mettre en forme :", FontWeight = FontWeight.SemiBold },
                         editor,
@@ -159,19 +159,20 @@ internal static class TextFormattingDialog
                         status,
                         new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Children = { cancelButton, saveButton } }
                     }
+                    }
                 }
-            }
-        };
+            };
 
-        saveButton.Click += (_, _) => window.Close(true);
-        cancelButton.Click += (_, _) => window.Close(false);
-        bool applied = await window.ShowDialog<bool>(owner);
-        if (!applied)
-            return false;
+            saveButton.Click += (_, _) => window.Close(true);
+            cancelButton.Click += (_, _) => window.Close(false);
+            bool applied = await window.ShowDialog<bool>(owner);
+            if (!applied)
+                return false;
 
-        textElement.Text = editor.Text ?? string.Empty;
-        textElement.TextRuns = NormalizeRuns(textElement.Text, workingRuns, textElement);
-        return true;
+            textElement.Text = editor.Text ?? string.Empty;
+            textElement.TextRuns = NormalizeRuns(textElement.Text, workingRuns, textElement);
+            return true;
+        }
     }
 
     private static List<TextRun> ApplyRunStyle(
