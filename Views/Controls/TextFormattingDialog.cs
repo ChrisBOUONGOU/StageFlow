@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using StageFlow.Models;
 
 namespace StageFlow.Views.Controls;
@@ -68,6 +69,7 @@ internal static class TextFormattingDialog
         void RememberSelection()
         {
             int start = editor.SelectionStart;
+            int length = editor.SelectedText?.Length ?? 0;
             int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
             if (length > 0)
             {
@@ -75,6 +77,25 @@ internal static class TextFormattingDialog
                 rememberedSelectionLength = length;
             }
         }
+
+        editor.PointerMoved += (_, _) => RememberSelection();
+        editor.PointerReleased += (_, _) =>
+            Dispatcher.UIThread.Post(RememberSelection);
+        editor.KeyUp += (_, _) =>
+            Dispatcher.UIThread.Post(RememberSelection);
+        editor.LostFocus += (_, _) => RememberSelection();
+
+        // SelectionStart and SelectionEnd can change after pointer/key events.
+        // Observe the properties directly so we retain the last non-empty range
+        // even when clicking a formatting button clears the active selection.
+        editor.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.SelectionStartProperty ||
+                e.Property == TextBox.SelectionEndProperty)
+            {
+                RememberSelection();
+            }
+        };
 
         editor.PointerReleased += (_, _) => RememberSelection();
         editor.KeyUp += (_, _) => RememberSelection();
@@ -95,6 +116,16 @@ internal static class TextFormattingDialog
         void ApplyToSelection(Action<TextRun> apply)
         {
             int start = editor.SelectionStart;
+            int length = editor.SelectedText?.Length ?? 0;
+
+            // If clicking a formatting control removes the visible selection,
+            // reuse the last non-empty selection captured in the editor.
+            if (length <= 0)
+            {
+                start = rememberedSelectionStart;
+                length = rememberedSelectionLength;
+            }
+
             int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
 
             // If clicking a formatting control removes the visible selection,
