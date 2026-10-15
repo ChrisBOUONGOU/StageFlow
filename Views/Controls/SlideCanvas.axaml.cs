@@ -649,24 +649,36 @@ private void ShowTextColorPicker(Button target)
                 "#202631");
         }
 
-        if (Editor == null ||
-            string.IsNullOrWhiteSpace(
-                Editor.MainViewModel.CurrentFilePath))
-        {
-            return CreateImagePlaceholder(
-                "VIDEO PATH NOT AVAILABLE",
-                "#3A2020");
-        }
+       
 
         try
         {
             var assetService =
                 new AssetService();
 
-            string videoPath =
-                assetService.ResolveAssetPath(
+            string videoPath;
+
+            if (!string.IsNullOrWhiteSpace(
+                    Editor?.MainViewModel.CurrentFilePath))
+            {
+                videoPath = assetService.ResolveAssetPath(
                     video.Source,
                     Editor.MainViewModel.CurrentFilePath);
+            }
+            else if (System.IO.Path.IsPathRooted(video.Source))
+            {
+                // Projet non enregistré :
+                // la vidéo peut se trouver dans le dossier temporaire.
+                videoPath = System.IO.Path.GetFullPath(video.Source);
+            }
+            else
+            {
+                // Sans projet enregistré, un chemin relatif
+                // ne peut pas être résolu de manière fiable.
+                return CreateImagePlaceholder(
+                    "VIDEO PATH NOT AVAILABLE",
+                    "#3A2020");
+            }
 
             if (!File.Exists(videoPath))
             {
