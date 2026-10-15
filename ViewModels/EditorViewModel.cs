@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -782,6 +782,7 @@ OnPropertyChanged(nameof(SelectedVideoVolume));
                     IsVisible = text.IsVisible,
 
                     Text = text.Text,
+                    TextRuns = text.TextRuns.Select(run => run.Clone()).ToList(),
                     FontFamily = text.FontFamily,
                     FontSize = text.FontSize,
                     IsBold = text.IsBold,
