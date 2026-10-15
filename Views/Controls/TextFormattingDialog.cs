@@ -82,23 +82,17 @@ internal static class TextFormattingDialog
 
         void ApplyToSelection(Action<TextRun> apply)
         {
-            RememberSelection();
-
             int start = editor.SelectionStart;
             int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
 
-            // Si le focus a effacé la sélection visuelle, réutilise la dernière
-            // sélection capturée dans l'éditeur.
+            // If clicking a formatting control removes the visible selection,
+            // reuse the last non-empty selection captured in the editor.
             if (length <= 0)
             {
                 start = rememberedSelectionStart;
                 length = rememberedSelectionLength;
             }
 
-        void ApplyToSelection(Action<TextRun> apply)
-        {
-            int start = editor.SelectionStart;
-            int length = editor.SelectionEnd - editor.SelectionStart;
             if (length <= 0)
             {
                 status.Text = "Sélectionne d'abord les caractères à modifier.";
