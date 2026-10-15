@@ -304,8 +304,7 @@ private Control CreateTextToolbar(TextElement text)
         {
             Content = "Aa",
             Width = 40,
-            Height = 32,
-            ToolTip = "Mettre en forme une portion du texte"
+            Height = 32
         };
         richTextButton.Click += async (_, _) => await OpenRichTextFormattingAsync(text);
         panel.Children.Add(richTextButton);
