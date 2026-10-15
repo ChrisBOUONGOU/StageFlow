@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,6 +7,9 @@ namespace StageFlow.Models
     public sealed class TextElement : SlideElement
     {
         public string Text { get; set; } = "New Text";
+
+        // Styles appliqués à des portions du texte.
+        public List<TextRun> TextRuns { get; set; } = new();
 
         public string FontFamily { get; set; } = "Inter";
 
