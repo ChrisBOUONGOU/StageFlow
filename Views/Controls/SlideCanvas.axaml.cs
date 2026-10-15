@@ -1632,6 +1632,24 @@ private void UpdateTextToolbarPosition(
         BottomRight
     }
 
+    private async Task OpenRichTextFormattingAsync(TextElement textElement)
+    {
+        var owner = App.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+        if (owner == null)
+            return;
+
+        bool applied = await TextFormattingDialog.ShowAsync(textElement, owner);
+        if (!applied)
+            return;
+
+        Editor?.RefreshSelectedProperties();
+        Editor?.RefreshCanvas();
+        RenderCanvas();
+    }
+
     private void BeginTextEditing(TextElement textElement)
     {
         if (_textEditor != null)
@@ -1711,8 +1729,13 @@ private void UpdateTextToolbarPosition(
 
         if (save)
         {
-            _editingTextElement.Text =
-                _textEditor.Text ?? string.Empty;
+            string editedText = _textEditor.Text ?? string.Empty;
+            if (!string.Equals(_editingTextElement.Text, editedText, StringComparison.Ordinal))
+            {
+                // L'éditeur simple ne gère pas encore la mise en forme en ligne pendant la saisie.
+                _editingTextElement.TextRuns.Clear();
+            }
+            _editingTextElement.Text = editedText;
         }
         else
         {
