@@ -70,7 +70,7 @@ internal static class TextFormattingDialog
         {
             int start = editor.SelectionStart;
             int length = editor.SelectedText?.Length ?? 0;
-            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
+         
             if (length > 0)
             {
                 rememberedSelectionStart = start;
@@ -126,8 +126,7 @@ internal static class TextFormattingDialog
                 length = rememberedSelectionLength;
             }
 
-            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
-
+      
             // If clicking a formatting control removes the visible selection,
             // reuse the last non-empty selection captured in the editor.
             if (length <= 0)
