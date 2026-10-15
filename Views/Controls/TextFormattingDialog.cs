@@ -80,6 +80,18 @@ internal static class TextFormattingDialog
         editor.KeyUp += (_, _) => RememberSelection();
         editor.LostFocus += (_, _) => RememberSelection();
 
+        // SelectionStart and SelectionEnd can change after pointer/key events.
+        // Observe the properties directly so we retain the last non-empty range
+        // even when clicking a formatting button clears the active selection.
+        editor.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.SelectionStartProperty ||
+                e.Property == TextBox.SelectionEndProperty)
+            {
+                RememberSelection();
+            }
+        };
+
         void ApplyToSelection(Action<TextRun> apply)
         {
             int start = editor.SelectionStart;
