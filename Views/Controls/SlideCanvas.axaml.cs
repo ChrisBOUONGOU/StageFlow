@@ -13,6 +13,7 @@ using StageFlow.Services;
 using StageFlow.ViewModels;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
+using TextElement = StageFlow.Models.TextElement;
 
 
 
@@ -38,7 +39,7 @@ public partial class SlideCanvas : UserControl
     private double _startElementY;
 
     private TextBox? _textEditor;
-    private TextElement? _editingTextElement;
+    private Models.TextElement? _editingTextElement;
     private string _originalText = string.Empty;
 
     private readonly LibVLC _libVLC;

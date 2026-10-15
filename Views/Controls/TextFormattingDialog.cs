@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Media;
 using StageFlow.Models;
 
@@ -94,6 +95,10 @@ internal static class TextFormattingDialog
                 length = rememberedSelectionLength;
             }
 
+        void ApplyToSelection(Action<TextRun> apply)
+        {
+            int start = editor.SelectionStart;
+            int length = editor.SelectionEnd - editor.SelectionStart;
             if (length <= 0)
             {
                 status.Text = "Sélectionne d'abord les caractères à modifier.";
