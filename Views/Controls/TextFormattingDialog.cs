@@ -13,7 +13,9 @@ using StageFlow.Models;
 
 namespace StageFlow.Views.Controls;
 
-/// <summary>Fenêtre permettant d'appliquer plusieurs styles à différentes portions d'un texte.</summary>
+/// <summary>
+/// Fenêtre permettant d'appliquer plusieurs styles à différentes portions d'un texte.
+/// </summary>
 internal static class TextFormattingDialog
 {
     public static async Task<bool> ShowAsync(TextElement textElement, Window owner)
@@ -74,63 +76,27 @@ internal static class TextFormattingDialog
         };
         colorPicker.ColorChanged += (_, e) => selectedColor = e.NewColor;
 
-        // Conserver la dernière sélection non vide : cliquer sur un bouton peut
-        // retirer la sélection visuelle du TextBox avant l'événement Click.
         int rememberedSelectionStart = 0;
         int rememberedSelectionLength = 0;
 
         void RememberSelection()
         {
-            int selectionStart = Math.Min(editor.SelectionStart, editor.SelectionEnd);
-            int selectionLength = Math.Abs(editor.SelectionEnd - editor.SelectionStart);
-            if (selectionLength > 0)
-            int start = editor.SelectionStart;
-            int length = editor.SelectedText?.Length ?? 0;
-         
+            int start = Math.Min(editor.SelectionStart, editor.SelectionEnd);
+            int length = Math.Abs(editor.SelectionEnd - editor.SelectionStart);
+
             if (length > 0)
             {
-                rememberedSelectionStart = selectionStart;
-                rememberedSelectionLength = selectionLength;
+                rememberedSelectionStart = start;
+                rememberedSelectionLength = length;
             }
         }
 
+        // Capture après les événements d'entrée : Avalonia peut mettre à jour la
+        // sélection après PointerReleased/KeyUp.
         editor.PointerMoved += (_, _) => Dispatcher.UIThread.Post(RememberSelection);
         editor.PointerReleased += (_, _) => Dispatcher.UIThread.Post(RememberSelection);
         editor.KeyUp += (_, _) => Dispatcher.UIThread.Post(RememberSelection);
-        editor.PointerMoved += (_, _) => RememberSelection();
-        editor.PointerReleased += (_, _) =>
-            Dispatcher.UIThread.Post(RememberSelection);
-        editor.KeyUp += (_, _) =>
-            Dispatcher.UIThread.Post(RememberSelection);
         editor.LostFocus += (_, _) => RememberSelection();
-
-        // SelectionStart and SelectionEnd can change after pointer/key events.
-        // Observe the properties directly so we retain the last non-empty range
-        // even when clicking a formatting button clears the active selection.
-        editor.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == TextBox.SelectionStartProperty ||
-                e.Property == TextBox.SelectionEndProperty)
-            {
-                RememberSelection();
-            }
-        };
-
-        editor.PointerReleased += (_, _) => RememberSelection();
-        editor.KeyUp += (_, _) => RememberSelection();
-        editor.LostFocus += (_, _) => RememberSelection();
-        editor.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == TextBox.SelectionStartProperty ||
-                e.Property == TextBox.SelectionEndProperty)
-            {
-                RememberSelection();
-            }
-        };
-
-        // SelectionStart and SelectionEnd can change after pointer/key events.
-        // Observe the properties directly so we retain the last non-empty range
-        // even when clicking a formatting button clears the active selection.
         editor.PropertyChanged += (_, e) =>
         {
             if (e.Property == TextBox.SelectionStartProperty ||
@@ -142,13 +108,11 @@ internal static class TextFormattingDialog
 
         void ApplyToSelection(Action<TextRun> apply)
         {
-            int start = editor.SelectionStart;
+            RememberSelection();
+
+            int start = Math.Min(editor.SelectionStart, editor.SelectionEnd);
             int length = Math.Abs(editor.SelectionEnd - editor.SelectionStart);
 
-            int length = editor.SelectedText?.Length ?? 0;
-
-            // If clicking a formatting control removes the visible selection,
-            // reuse the last non-empty selection captured in the editor.
             if (length <= 0)
             {
                 start = rememberedSelectionStart;
@@ -169,7 +133,7 @@ internal static class TextFormattingDialog
                 textElement,
                 apply);
 
-            status.Text = "Style appliqué. Sélectionne une autre portion pour lui appliquer un autre style.";
+            status.Text = "Style appliqué. Tu peux sélectionner une autre portion du texte.";
         }
 
         var boldButton = new Button
@@ -188,7 +152,11 @@ internal static class TextFormattingDialog
         };
         italicButton.Click += (_, _) => ApplyToSelection(run => run.IsItalic = !run.IsItalic);
 
-        var sizeButton = new Button { Content = "Appliquer la taille", Focusable = false };
+        var sizeButton = new Button
+        {
+            Content = "Appliquer la taille",
+            Focusable = false
+        };
         sizeButton.Click += (_, _) =>
         {
             if (double.TryParse(sizeBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double size) &&
@@ -202,40 +170,11 @@ internal static class TextFormattingDialog
             }
         };
 
-        var colorButton = new Button { Content = "Appliquer la couleur", Focusable = false };
-      
-            // If clicking a formatting control removes the visible selection,
-            // reuse the last non-empty selection captured in the editor.
-            if (length <= 0)
-            {
-                start = rememberedSelectionStart;
-                length = rememberedSelectionLength;
-            }
-
-            if (length <= 0)
-            {
-                status.Text = "Sélectionne d'abord les caractères à modifier.";
-                return;
-            }
-
-            workingRuns = ApplyRunStyle(editor.Text ?? string.Empty, workingRuns,
-                start, length, textElement, apply);
-            status.Text = "Style appliqué à la sélection. Tu peux en sélectionner une autre.";
-        }
-
-        var boldButton = new Button { Content = "B", FontWeight = FontWeight.Bold };
-        boldButton.Click += (_, _) => ApplyToSelection(run => run.IsBold = !run.IsBold);
-        var italicButton = new Button { Content = "I", FontStyle = FontStyle.Italic };
-        italicButton.Click += (_, _) => ApplyToSelection(run => run.IsItalic = !run.IsItalic);
-        var sizeButton = new Button { Content = "Appliquer la taille" };
-        sizeButton.Click += (_, _) =>
+        var colorButton = new Button
         {
-            if (double.TryParse(sizeBox.Text, out double size) && size >= 8 && size <= 300)
-                ApplyToSelection(run => run.FontSize = size);
-            else
-                status.Text = "Entre une taille comprise entre 8 et 300.";
+            Content = "Appliquer la couleur",
+            Focusable = false
         };
-        var colorButton = new Button { Content = "Appliquer la couleur" };
         colorButton.Click += (_, _) => ApplyToSelection(run => run.Color = selectedColor.ToString());
 
         var actions = new StackPanel
@@ -255,8 +194,6 @@ internal static class TextFormattingDialog
             Content = "Annuler",
             HorizontalAlignment = HorizontalAlignment.Right
         };
-        var saveButton = new Button { Content = "Appliquer et fermer", HorizontalAlignment = HorizontalAlignment.Right };
-        var cancelButton = new Button { Content = "Annuler", HorizontalAlignment = HorizontalAlignment.Right };
 
         var window = new Window
         {
@@ -279,10 +216,13 @@ internal static class TextFormattingDialog
                             Text = "Texte — sélectionne les caractères à mettre en forme :",
                             FontWeight = FontWeight.SemiBold
                         },
-                        new TextBlock { Text = "Texte — sélectionne les caractères à mettre en forme :", FontWeight = FontWeight.SemiBold },
                         editor,
                         actions,
-                        new TextBlock { Text = "Couleur", FontWeight = FontWeight.SemiBold },
+                        new TextBlock
+                        {
+                            Text = "Couleur",
+                            FontWeight = FontWeight.SemiBold
+                        },
                         colorPicker,
                         colorButton,
                         status,
@@ -293,7 +233,6 @@ internal static class TextFormattingDialog
                             Spacing = 8,
                             Children = { cancelButton, saveButton }
                         }
-                        new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Children = { cancelButton, saveButton } }
                     }
                 }
             }
@@ -301,10 +240,6 @@ internal static class TextFormattingDialog
 
         saveButton.Click += (_, _) => window.Close(true);
         cancelButton.Click += (_, _) => window.Close(false);
-
-        bool applied = await window.ShowDialog<bool>(owner);
-        if (!applied)
-            return false;
 
         bool applied = await window.ShowDialog<bool>(owner);
         if (!applied)
@@ -325,6 +260,7 @@ internal static class TextFormattingDialog
     {
         start = Math.Clamp(start, 0, text.Length);
         length = Math.Clamp(length, 0, text.Length - start);
+
         if (length == 0)
             return NormalizeRuns(text, runs, defaults);
 
@@ -384,6 +320,7 @@ internal static class TextFormattingDialog
     private static List<TextRun> MergeAdjacentRuns(List<TextRun> runs)
     {
         var merged = new List<TextRun>();
+
         foreach (var run in runs)
         {
             if (run.Text.Length == 0)
