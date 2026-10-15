@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using StageFlow.Models;
 
 namespace StageFlow.Views.Controls;
@@ -68,7 +69,7 @@ internal static class TextFormattingDialog
         void RememberSelection()
         {
             int start = editor.SelectionStart;
-            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
+            int length = editor.SelectedText?.Length ?? 0;
             if (length > 0)
             {
                 rememberedSelectionStart = start;
@@ -76,8 +77,11 @@ internal static class TextFormattingDialog
             }
         }
 
-        editor.PointerReleased += (_, _) => RememberSelection();
-        editor.KeyUp += (_, _) => RememberSelection();
+        editor.PointerMoved += (_, _) => RememberSelection();
+        editor.PointerReleased += (_, _) =>
+            Dispatcher.UIThread.Post(RememberSelection);
+        editor.KeyUp += (_, _) =>
+            Dispatcher.UIThread.Post(RememberSelection);
         editor.LostFocus += (_, _) => RememberSelection();
 
         // SelectionStart and SelectionEnd can change after pointer/key events.
@@ -95,7 +99,7 @@ internal static class TextFormattingDialog
         void ApplyToSelection(Action<TextRun> apply)
         {
             int start = editor.SelectionStart;
-            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
+            int length = editor.SelectedText?.Length ?? 0;
 
             // If clicking a formatting control removes the visible selection,
             // reuse the last non-empty selection captured in the editor.
