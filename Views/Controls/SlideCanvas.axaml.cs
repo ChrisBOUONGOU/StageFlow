@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -296,6 +297,20 @@ private Control CreateTextToolbar(TextElement text)
         };
 
         // =====================================================
+        // MISE EN FORME D'UNE PORTION DE TEXTE
+        // =====================================================
+
+        var richTextButton = new Button
+        {
+            Content = "Aa",
+            Width = 40,
+            Height = 32,
+            ToolTip = "Mettre en forme une portion du texte"
+        };
+        richTextButton.Click += async (_, _) => await OpenRichTextFormattingAsync(text);
+        panel.Children.Add(richTextButton);
+
+        // =====================================================
         // DIMINUER LA TAILLE
         // =====================================================
 
@@ -493,7 +508,6 @@ private void ShowTextColorPicker(Button target)
     {
         var textBlock = new TextBlock
         {
-            Text = text.Text,
             FontFamily = new FontFamily(text.FontFamily),
             FontSize = text.FontSize,
             Foreground = Brush.Parse(text.Color),
@@ -509,6 +523,29 @@ private void ShowTextColorPicker(Button target)
 
         if (text.IsItalic)
             textBlock.FontStyle = FontStyle.Italic;
+
+        // Les TextRuns ne sont utilisés que si leur contenu correspond au texte enregistré.
+        // Cela conserve la compatibilité avec les anciens projets JSON.
+        if (text.TextRuns is { Count: > 0 } &&
+            string.Concat(text.TextRuns.Select(run => run.Text)) == text.Text)
+        {
+            foreach (var textRun in text.TextRuns)
+            {
+                var run = new Run
+                {
+                    Text = textRun.Text,
+                    Foreground = Brush.Parse(textRun.Color),
+                    FontSize = textRun.FontSize,
+                    FontWeight = textRun.IsBold ? FontWeight.Bold : FontWeight.Normal,
+                    FontStyle = textRun.IsItalic ? FontStyle.Italic : FontStyle.Normal
+                };
+                textBlock.Inlines.Add(run);
+            }
+        }
+        else
+        {
+            textBlock.Text = text.Text;
+        }
 
         var border = new Border
         {
