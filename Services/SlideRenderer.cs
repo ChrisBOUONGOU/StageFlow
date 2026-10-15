@@ -181,9 +181,6 @@ namespace StageFlow.Services
             var textBlock =
                 new TextBlock
                 {
-                    Text =
-                        text.Text,
-
                     FontFamily =
                         new FontFamily(
                             text.FontFamily),
@@ -217,6 +214,28 @@ namespace StageFlow.Services
             {
                 textBlock.FontStyle =
                     FontStyle.Italic;
+            }
+
+            // Afficher les styles appliqués à chaque portion du texte
+            // dans la fenêtre de présentation, et pas uniquement dans l'éditeur.
+            if (text.TextRuns is { Count: > 0 } &&
+                string.Concat(text.TextRuns.Select(run => run.Text)) == text.Text)
+            {
+                foreach (var textRun in text.TextRuns)
+                {
+                    textBlock.Inlines.Add(new Run
+                    {
+                        Text = textRun.Text,
+                        Foreground = Brush.Parse(textRun.Color),
+                        FontSize = textRun.FontSize,
+                        FontWeight = textRun.IsBold ? FontWeight.Bold : FontWeight.Normal,
+                        FontStyle = textRun.IsItalic ? FontStyle.Italic : FontStyle.Normal
+                    });
+                }
+            }
+            else
+            {
+                textBlock.Text = text.Text;
             }
 
             return new Border
