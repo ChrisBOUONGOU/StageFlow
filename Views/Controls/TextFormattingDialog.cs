@@ -59,6 +59,42 @@ internal static class TextFormattingDialog
         };
         colorPicker.ColorChanged += (_, e) => selectedColor = e.NewColor;
 
+        // Avalonia peut retirer le focus du TextBox lorsqu'on clique sur un
+        // bouton ou sur le sélecteur de couleur. On mémorise donc la sélection
+        // pendant que l'utilisateur sélectionne le texte, avant le changement de focus.
+        int rememberedSelectionStart = 0;
+        int rememberedSelectionLength = 0;
+
+        void RememberSelection()
+        {
+            int start = editor.SelectionStart;
+            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
+            if (length > 0)
+            {
+                rememberedSelectionStart = start;
+                rememberedSelectionLength = length;
+            }
+        }
+
+        editor.PointerReleased += (_, _) => RememberSelection();
+        editor.KeyUp += (_, _) => RememberSelection();
+        editor.LostFocus += (_, _) => RememberSelection();
+
+        void ApplyToSelection(Action<TextRun> apply)
+        {
+            RememberSelection();
+
+            int start = editor.SelectionStart;
+            int length = Math.Max(0, editor.SelectionEnd - editor.SelectionStart);
+
+            // Si le focus a effacé la sélection visuelle, réutilise la dernière
+            // sélection capturée dans l'éditeur.
+            if (length <= 0)
+            {
+                start = rememberedSelectionStart;
+                length = rememberedSelectionLength;
+            }
+
         void ApplyToSelection(Action<TextRun> apply)
         {
             int start = editor.SelectionStart;
