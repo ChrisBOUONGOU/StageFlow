@@ -468,6 +468,7 @@ namespace StageFlow.ViewModels
                 Title = $"Slide {Slides.Count + 1}",
                 Background = "#10131A"
             };
+            Document.Slides.Add(slide);
 
             Slides.Add(slide);
 
@@ -491,6 +492,7 @@ namespace StageFlow.ViewModels
             }
 
             var index = Slides.IndexOf(SelectedSlide);
+            Document.Slides.Remove(SelectedSlide);
 
             Slides.Remove(SelectedSlide);
 

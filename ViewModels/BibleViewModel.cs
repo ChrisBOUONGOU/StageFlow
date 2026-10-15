@@ -359,6 +359,7 @@ namespace StageFlow.ViewModels
             var slide = CreateVerseSlide(
                 SelectedVerse);
 
+            _mainViewModel.Document.Slides.Add(slide);
             _mainViewModel.Slides.Add(slide);
 
             _mainViewModel.SelectedSlide =
@@ -406,7 +407,10 @@ namespace StageFlow.ViewModels
                         theme);
 
                 foreach (var slide in slides)
+                {
+                    _mainViewModel.Document.Slides.Add(slide);
                     _mainViewModel.Slides.Add(slide);
+                }
 
                 if (slides.Count > 0)
                 {
