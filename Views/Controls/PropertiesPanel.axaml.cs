@@ -39,6 +39,15 @@ public partial class PropertiesPanel : UserControl
         editor.RefreshVideoPlaybackStateForControls();
     }
 
+    private void VideoSeek_PointerPressed(
+        object? sender,
+        PointerPressedEventArgs e)
+    {
+        if (DataContext is EditorViewModel editor &&
+            editor.SelectedElement is VideoElement)
+            editor.SetVideoSeeking(true);
+    }
+
     private void VideoSeek_PointerReleased(
         object? sender,
         PointerReleasedEventArgs e)
