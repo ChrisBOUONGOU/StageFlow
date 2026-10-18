@@ -131,6 +131,39 @@ public static class VideoPlaybackService
             TryPlay(session.EditorPlayer);
         if (session.PresentationSurfaceReady)
             TryPlay(session.PresentationPlayer);
+            var player = presentation ? session.PresentationPlayer : session.EditorPlayer;
+            var other = presentation ? session.EditorPlayer : session.PresentationPlayer;
+
+            // Si l'autre écran est déjà en lecture, faire rejoindre ce lecteur
+            // à la position courante au lieu de redémarrer le média.
+            if (other.IsPlaying && !player.IsPlaying)
+            {
+                try
+                {
+                    player.Time = Math.Max(0, other.Time);
+                    player.Play();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Video synchronization error: {ex}");
+                }
+            }
+
+            return player;
+        }
+    }
+
+    public static void Start(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session) ||
+                session.PlaybackHeld)
+                return;
+
+            TryPlay(session.EditorPlayer);
+            TryPlay(session.PresentationPlayer);
+        }
     }
 
     public static bool IsPlaying(Guid videoId)
@@ -167,6 +200,8 @@ public static class VideoPlaybackService
             }
 
             PlayReadyPlayers(session);
+            TryPlay(session.EditorPlayer);
+            TryPlay(session.PresentationPlayer);
         }
     }
 
@@ -252,6 +287,8 @@ public static class VideoPlaybackService
         // changement de fenêtre : le lecteur éditeur porte toujours le son.
         session.EditorPlayer.Volume = volume;
         session.PresentationPlayer.Volume = 0;
+        session.EditorPlayer.Volume = PresentationActive ? 0 : volume;
+        session.PresentationPlayer.Volume = PresentationActive ? volume : 0;
     }
 
     public static void SetLoop(Guid videoId, bool loop)
@@ -433,6 +470,14 @@ public static class VideoPlaybackService
 
                     long delta = master.Time - follower.Time;
                     if (Math.Abs(delta) > 900)
+                    var master = editor.IsPlaying ? editor : presentation;
+                    var follower = ReferenceEquals(master, editor) ? presentation : editor;
+
+                    if (!master.IsPlaying)
+                        continue;
+
+                    long delta = master.Time - follower.Time;
+                    if (Math.Abs(delta) > 450)
                         follower.Time = Math.Max(0, master.Time);
 
                     if (!follower.IsPlaying)

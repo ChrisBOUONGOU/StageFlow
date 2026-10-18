@@ -426,6 +426,10 @@ namespace StageFlow.Services
                 videoView.DetachedFromVisualTree += (_, _) =>
                     VideoPlaybackService.NotifySurfaceReady(
                         video.Id, presentationMode, ready: false);
+                // La création ou le rafraîchissement de la vue ne doit pas
+                // remettre à zéro une vidéo déjà en cours.
+                if (video.AutoPlay)
+                    VideoPlaybackService.Start(video.Id);
 
                 // -------------------------------------------------
                 // CONTAINER VIDÉO
