@@ -49,11 +49,6 @@ public partial class PresentationWindow : Window
         Opened +=
             PresentationWindow_Opened;
 
-        // =====================================================
-        // AFFICHAGE INITIAL
-        // =====================================================
-
-        UpdateSlide();
     }
 
     // =========================================================
