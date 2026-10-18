@@ -67,6 +67,8 @@ public partial class PresentationWindow : Window
         WindowState =
             WindowState.FullScreen;
 
+        VideoPlaybackService.SetPresentationActive(true);
+
         Activate();
 
         Focus();
@@ -293,8 +295,9 @@ public partial class PresentationWindow : Window
         _viewModel.PropertyChanged -=
             ViewModel_PropertyChanged;
 
-        // La fermeture de cette fenêtre ne doit pas interrompre la lecture
-        // qui continue dans l'éditeur.
+        // La fermeture de cette fenêtre ne doit pas interrompre la lecture.
+        // Le son revient à l'éditeur, qui conserve sa propre surface vidéo.
+        VideoPlaybackService.SetPresentationActive(false);
         VideoPlaybackService.KeepPlaybackAlive();
 
         base.OnClosed(e);
