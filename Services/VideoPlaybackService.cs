@@ -263,7 +263,9 @@ public static class VideoPlaybackService
                     continue;
 
                 var session = entry.Value;
-                session.PlaybackHeld = true;
+                // L'arrêt est dû au changement de slide, pas à une pause
+                // utilisateur : AutoPlay pourra donc relancer la vidéo au retour.
+                session.PlaybackHeld = false;
 
                 try
                 {
