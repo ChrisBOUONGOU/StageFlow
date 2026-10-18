@@ -340,7 +340,15 @@ public static class VideoPlaybackService
                 ? session.PresentationSurfaceReady
                 : session.EditorSurfaceReady;
 
-            if (ownerReady)
+            // Une surface peut être détachée lors d'un changement de fenêtre
+            // alors que son MediaPlayer continue la lecture audio. Ne pas
+            // transférer l'audio à l'autre lecteur dans ce cas : changer de
+            // MediaPlayer en cours de lecture coupe la session audio Windows.
+            bool ownerStillPlaying = session.AudioOwnerPresentation
+                ? session.PresentationPlayer.IsPlaying
+                : session.EditorPlayer.IsPlaying;
+
+            if (ownerReady || ownerStillPlaying)
                 return;
         }
 
