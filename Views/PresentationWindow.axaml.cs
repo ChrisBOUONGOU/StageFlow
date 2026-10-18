@@ -102,6 +102,13 @@ public partial class PresentationWindow : Window
         var slide =
             _viewModel.SelectedSlide;
 
+        VideoPlaybackService.StopExcept(
+            slide?.Elements
+                .OfType<VideoElement>()
+                .Where(video => video.IsVisible)
+                .Select(video => video.Id)
+            ?? Enumerable.Empty<Guid>());
+
         if (slide == null)
         {
             SlideContent.Content = null;
