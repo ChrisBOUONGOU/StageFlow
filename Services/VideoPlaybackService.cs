@@ -25,6 +25,10 @@ public static class VideoPlaybackService
         public bool PlaybackHeld { get; set; }
         public bool EditorSurfaceReady { get; set; }
         public bool PresentationSurfaceReady { get; set; }
+        // Le lecteur audio est choisi une seule fois à la première surface prête.
+        // Le changer pendant la lecture peut provoquer une coupure audible.
+        public bool AudioOwnerChosen { get; set; }
+        public bool AudioOwnerPresentation { get; set; }
     }
 
     private static readonly object Gate = new();
@@ -87,9 +91,15 @@ public static class VideoPlaybackService
             else
                 session.EditorSurfaceReady = ready;
 
-            // Le lecteur audio suit la fenêtre qui possède une surface vidéo
-            // réellement attachée. Cela évite de garder le son sur un lecteur
-            // d'éditeur momentanément détaché lors d'un rafraîchissement.
+            // Verrouiller le lecteur audio sur la première surface prête.
+            // Ne pas commuter le son lorsque l'on ouvre/ferme la présentation
+            // ou lorsqu'une vue est momentanément détachée.
+            if (ready && !session.AudioOwnerChosen)
+            {
+                session.AudioOwnerPresentation = presentation;
+                session.AudioOwnerChosen = true;
+            }
+
             ApplyVolume(session);
 
             if (!ready || session.PlaybackHeld)
@@ -304,18 +314,17 @@ public static class VideoPlaybackService
     {
         int volume = (int)Math.Round(session.Volume * 100);
 
-        // Ne laisser qu'un seul lecteur produire le son. Pendant une
-        // présentation, privilégier le lecteur de présentation dès que sa
-        // surface est prête. Sinon, conserver le lecteur de l'éditeur.
-        bool presentationOwnsAudio =
-            _presentationActive && session.PresentationSurfaceReady;
-
-        if (!presentationOwnsAudio && !session.EditorSurfaceReady)
-            presentationOwnsAudio = session.PresentationSurfaceReady;
-
+        // Garder un seul lecteur audio pendant toute la session. Avant que
+        // la première surface soit prête, les deux lecteurs restent muets ;
+        // NotifySurfaceReady choisira le propriétaire avant le démarrage.
         try
         {
-            session.EditorPlayer.Volume = presentationOwnsAudio ? 0 : volume;
+            bool editorOwnsAudio =
+                session.AudioOwnerChosen && !session.AudioOwnerPresentation;
+            bool presentationOwnsAudio =
+                session.AudioOwnerChosen && session.AudioOwnerPresentation;
+
+            session.EditorPlayer.Volume = editorOwnsAudio ? volume : 0;
             session.PresentationPlayer.Volume = presentationOwnsAudio ? volume : 0;
         }
         catch (Exception ex)
@@ -489,11 +498,25 @@ public static class VideoPlaybackService
                     bool editorReady = session.EditorSurfaceReady;
                     bool presentationReady = session.PresentationSurfaceReady;
 
-                    MediaPlayer? master = editorReady && editor.IsPlaying
-                        ? editor
-                        : presentationReady && presentation.IsPlaying
-                            ? presentation
-                            : null;
+                    // Le lecteur qui émet le son doit rester maître de la
+                    // synchronisation : repositionner le lecteur audible peut
+                    // interrompre brièvement le son.
+                    MediaPlayer? audioOwner = session.AudioOwnerPresentation
+                        ? presentation
+                        : editor;
+
+                    bool audioOwnerReady = session.AudioOwnerPresentation
+                        ? presentationReady
+                        : editorReady;
+
+                    MediaPlayer? master =
+                        audioOwnerReady && audioOwner.IsPlaying
+                            ? audioOwner
+                            : editorReady && editor.IsPlaying
+                                ? editor
+                                : presentationReady && presentation.IsPlaying
+                                    ? presentation
+                                    : null;
 
                     if (master is null)
                         continue;
