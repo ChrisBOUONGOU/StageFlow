@@ -252,14 +252,52 @@
                             Background="{DynamicResource AppBorderBrush}"
                             Margin="0,4"/>
 
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button
-                                Content="▶ / Ⅱ"
-                                Click="VideoPlayPause_Click"/>
-                            <Button
-                                Content="⏮ Restart"
-                                Click="VideoRestart_Click"/>
-                        </StackPanel>
+                        <!-- Barre de lecture inspirée de YouTube -->
+                        <Border
+                            Background="#171717"
+                            CornerRadius="6"
+                            Padding="10">
+                            <StackPanel Spacing="8">
+                                <Slider
+                                    x:Name="VideoProgressSlider"
+                                    Minimum="0"
+                                    Maximum="{Binding SelectedVideoDuration}"
+                                    Value="{Binding SelectedVideoPosition, Mode=OneWay}"
+                                    PointerReleased="VideoSeek_PointerReleased"
+                                    IsEnabled="{Binding IsVideoElement}"
+                                    Height="24"/>
+
+                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
+                                      ColumnSpacing="6">
+                                    <Button
+                                        Grid.Column="0"
+                                        Content="{Binding SelectedVideoIsPlaying, StringFormat='▶ / Ⅱ'}"
+                                        Click="VideoPlayPause_Click"
+                                        Padding="10,5"
+                                        MinWidth="56"/>
+                                    <Button
+                                        Grid.Column="1"
+                                        Content="■"
+                                        ToolTip.Tip="Arrêter"
+                                        Click="VideoStop_Click"
+                                        Padding="10,5"
+                                        MinWidth="38"/>
+                                    <Button
+                                        Grid.Column="2"
+                                        Content="↺"
+                                        ToolTip.Tip="Recommencer"
+                                        Click="VideoRestart_Click"
+                                        Padding="10,5"
+                                        MinWidth="38"/>
+                                    <TextBlock
+                                        Grid.Column="4"
+                                        Text="{Binding SelectedVideoTimeLabel}"
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        Foreground="#FFFFFF"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
 
 						<CheckBox
                             Content="AutoPlay"
