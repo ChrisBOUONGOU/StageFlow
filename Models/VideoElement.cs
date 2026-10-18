@@ -13,5 +13,8 @@ namespace StageFlow.Models
         public bool AutoPlay { get; set; } = true;
 
         public double Volume { get; set; } = 1.0;
+
+        // Le son est activé par défaut ; l'utilisateur peut le couper indépendamment du volume.
+        public bool Muted { get; set; } = false;
     }
 }
