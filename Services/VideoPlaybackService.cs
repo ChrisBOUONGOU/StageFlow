@@ -10,9 +10,8 @@ using System.Threading;
 namespace StageFlow.Services;
 
 /// <summary>
-/// Maintient une lecture logique commune tout en utilisant un lecteur LibVLC
-/// par fenêtre : LibVLC ne garantit pas qu'un MediaPlayer puisse alimenter
-/// deux surfaces vidéo natives simultanément.
+/// Gère une session vidéo commune à l'éditeur et à la présentation.
+/// Chaque fenêtre possède son propre lecteur LibVLC, synchronisé avec l'autre.
 /// </summary>
 public static class VideoPlaybackService
 {
@@ -32,7 +31,6 @@ public static class VideoPlaybackService
     private static readonly LibVLC LibVlc = new();
     private static readonly Dictionary<Guid, Session> Sessions = new();
     private static readonly Timer SyncTimer = new(SynchronizePlayers, null, 250, 250);
-    private static bool PresentationActive;
 
     public static MediaPlayer GetPlayer(
         VideoElement video,
@@ -46,7 +44,7 @@ public static class VideoPlaybackService
             if (!Sessions.TryGetValue(video.Id, out var session) ||
                 !string.Equals(session.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                if (session != null)
+                if (session is not null)
                     DisposeSession(session);
 
                 session = new Session
@@ -55,10 +53,10 @@ public static class VideoPlaybackService
                     EditorPlayer = CreatePlayer(path),
                     PresentationPlayer = CreatePlayer(path),
                     Loop = loop,
-                    Volume = volume
+                    Volume = Math.Clamp(volume, 0, 1)
                 };
-                Sessions[video.Id] = session;
 
+                Sessions[video.Id] = session;
                 session.EditorPlayer.EndReached += (_, _) => HandleEnd(video.Id);
                 session.PresentationPlayer.EndReached += (_, _) => HandleEnd(video.Id);
             }
@@ -71,24 +69,12 @@ public static class VideoPlaybackService
         }
     }
 
-    public static void Start(Guid videoId)
-    {
-        lock (Gate)
-        {
-            if (!Sessions.TryGetValue(videoId, out var session) ||
-                session.PlaybackHeld)
-                return;
-
-            PlayReadyPlayers(session);
-        }
-    }
-
-    /// <summary>
-    /// Signale que la surface vidéo native est attachée à la fenêtre.
-    /// LibVLC ne doit pas démarrer avant cette étape : sinon il peut ouvrir
-    /// une fenêtre vidéo séparée ou laisser une surface noire.
-    /// </summary>
-    public static void NotifySurfaceReady(Guid videoId, bool presentation, bool ready, bool autoPlay = false)
+    /// <summary>Signale l'attachement ou le détachement d'une surface vidéo native.</summary>
+    public static void NotifySurfaceReady(
+        Guid videoId,
+        bool presentation,
+        bool ready,
+        bool autoPlay = false)
     {
         lock (Gate)
         {
@@ -125,52 +111,24 @@ public static class VideoPlaybackService
         }
     }
 
-    private static void PlayReadyPlayers(Session session)
-    {
-        if (session.EditorSurfaceReady)
-            TryPlay(session.EditorPlayer);
-        if (session.PresentationSurfaceReady)
-            TryPlay(session.PresentationPlayer);
-            var player = presentation ? session.PresentationPlayer : session.EditorPlayer;
-            var other = presentation ? session.EditorPlayer : session.PresentationPlayer;
-
-            // Si l'autre écran est déjà en lecture, faire rejoindre ce lecteur
-            // à la position courante au lieu de redémarrer le média.
-            if (other.IsPlaying && !player.IsPlaying)
-            {
-                try
-                {
-                    player.Time = Math.Max(0, other.Time);
-                    player.Play();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Video synchronization error: {ex}");
-                }
-            }
-
-            return player;
-        }
-    }
-
     public static void Start(Guid videoId)
     {
         lock (Gate)
         {
-            if (!Sessions.TryGetValue(videoId, out var session) ||
-                session.PlaybackHeld)
+            if (!Sessions.TryGetValue(videoId, out var session) || session.PlaybackHeld)
                 return;
 
-            TryPlay(session.EditorPlayer);
-            TryPlay(session.PresentationPlayer);
+            PlayReadyPlayers(session);
         }
     }
 
     public static bool IsPlaying(Guid videoId)
     {
         lock (Gate)
+        {
             return Sessions.TryGetValue(videoId, out var session) &&
                    (session.EditorPlayer.IsPlaying || session.PresentationPlayer.IsPlaying);
+        }
     }
 
     public static void Toggle(Guid videoId)
@@ -179,6 +137,38 @@ public static class VideoPlaybackService
             Pause(videoId);
         else
             Resume(videoId);
+    }
+
+    public static void Pause(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            session.PlaybackHeld = true;
+            try
+            {
+                session.EditorPlayer.Pause();
+                session.PresentationPlayer.Pause();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video pause error: {ex}");
+            }
+        }
+    }
+
+    public static void Resume(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            session.PlaybackHeld = false;
+            PlayReadyPlayers(session);
+        }
     }
 
     public static void Restart(Guid videoId)
@@ -200,34 +190,6 @@ public static class VideoPlaybackService
             }
 
             PlayReadyPlayers(session);
-            TryPlay(session.EditorPlayer);
-            TryPlay(session.PresentationPlayer);
-        }
-    }
-
-    public static void Pause(Guid videoId)
-    {
-        lock (Gate)
-        {
-            if (!Sessions.TryGetValue(videoId, out var session))
-                return;
-
-            session.PlaybackHeld = true;
-            session.EditorPlayer.Pause();
-            session.PresentationPlayer.Pause();
-        }
-    }
-
-    public static void Resume(Guid videoId)
-    {
-        lock (Gate)
-        {
-            if (!Sessions.TryGetValue(videoId, out var session))
-                return;
-
-            session.PlaybackHeld = false;
-            TryPlay(session.EditorPlayer);
-            TryPlay(session.PresentationPlayer);
         }
     }
 
@@ -239,20 +201,20 @@ public static class VideoPlaybackService
                 return;
 
             session.PlaybackHeld = true;
-            session.EditorPlayer.Stop();
-            session.PresentationPlayer.Stop();
-
-            if (resetPosition)
+            try
             {
-                try
+                session.EditorPlayer.Stop();
+                session.PresentationPlayer.Stop();
+
+                if (resetPosition)
                 {
                     session.EditorPlayer.Time = 0;
                     session.PresentationPlayer.Time = 0;
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Video stop error: {ex}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video stop error: {ex}");
             }
         }
     }
@@ -265,30 +227,38 @@ public static class VideoPlaybackService
                 return;
 
             long position = Math.Max(0, milliseconds);
-            session.EditorPlayer.Time = position;
-            session.PresentationPlayer.Time = position;
+            try
+            {
+                session.EditorPlayer.Time = position;
+                session.PresentationPlayer.Time = position;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video seek error: {ex}");
+            }
         }
     }
 
     public static void SetPresentationActive(bool active)
     {
-        lock (Gate)
-        {
-            PresentationActive = active;
-            foreach (var session in Sessions.Values)
-                ApplyVolume(session);
-        }
+        // Le lecteur de l'éditeur conserve la sortie audio. On ne change pas
+        // de lecteur audio à l'ouverture de la présentation, ce qui évite
+        // les coupures provoquées par le basculement de la sortie sonore.
     }
 
     private static void ApplyVolume(Session session)
     {
         int volume = (int)Math.Round(session.Volume * 100);
-        // Garder une seule source audio stable pour éviter une coupure au
-        // changement de fenêtre : le lecteur éditeur porte toujours le son.
-        session.EditorPlayer.Volume = volume;
-        session.PresentationPlayer.Volume = 0;
-        session.EditorPlayer.Volume = PresentationActive ? 0 : volume;
-        session.PresentationPlayer.Volume = PresentationActive ? volume : 0;
+        try
+        {
+            // Une seule sortie audio : le lecteur de l'éditeur.
+            session.EditorPlayer.Volume = volume;
+            session.PresentationPlayer.Volume = 0;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Video volume error: {ex}");
+        }
     }
 
     public static void SetLoop(Guid videoId, bool loop)
@@ -312,14 +282,9 @@ public static class VideoPlaybackService
         }
     }
 
-    /// <summary>
-    /// Appelé lorsqu'une fenêtre se ferme : la lecture continue dans l'autre
-    /// fenêtre. Les lecteurs ne sont arrêtés que lors d'un arrêt explicite.
-    /// </summary>
     public static void KeepPlaybackAlive()
     {
-        // Intentionnellement vide : la durée de vie des lecteurs est celle
-        // de la session de présentation, pas celle d'un VideoView.
+        // Les lecteurs appartiennent au service, pas à la durée de vie d'une vue.
     }
 
     public static void StopExcept(IEnumerable<Guid> activeVideoIds)
@@ -334,8 +299,6 @@ public static class VideoPlaybackService
                     continue;
 
                 var session = entry.Value;
-                // L'arrêt est dû au changement de slide, pas à une pause
-                // utilisateur : AutoPlay pourra donc relancer la vidéo au retour.
                 session.PlaybackHeld = false;
 
                 try
@@ -359,29 +322,41 @@ public static class VideoPlaybackService
         {
             foreach (var session in Sessions.Values)
             {
-                session.EditorPlayer.Stop();
-                session.PresentationPlayer.Stop();
-
-                if (resetPosition)
+                try
                 {
-                    try
+                    session.EditorPlayer.Stop();
+                    session.PresentationPlayer.Stop();
+
+                    if (resetPosition)
                     {
                         session.EditorPlayer.Time = 0;
                         session.PresentationPlayer.Time = 0;
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Video reset error: {ex}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Video stop error: {ex}");
                 }
             }
         }
     }
 
+    private static void PlayReadyPlayers(Session session)
+    {
+        if (session.EditorSurfaceReady)
+            TryPlay(session.EditorPlayer);
+
+        if (session.PresentationSurfaceReady)
+            TryPlay(session.PresentationPlayer);
+    }
+
     private static MediaPlayer CreatePlayer(string path)
     {
-        var player = new MediaPlayer(LibVlc);
-        player.Media = new Media(LibVlc, path, FromType.FromPath);
+        var player = new MediaPlayer(LibVlc)
+        {
+            Media = new Media(LibVlc, path, FromType.FromPath)
+        };
+
         return player;
     }
 
@@ -417,6 +392,7 @@ public static class VideoPlaybackService
                 {
                     Debug.WriteLine($"Video end handling error: {ex}");
                 }
+
                 return;
             }
 
@@ -425,8 +401,7 @@ public static class VideoPlaybackService
                 session.PlaybackHeld = false;
                 session.EditorPlayer.Time = 0;
                 session.PresentationPlayer.Time = 0;
-                TryPlay(session.EditorPlayer);
-                TryPlay(session.PresentationPlayer);
+                PlayReadyPlayers(session);
             }
             catch (Exception ex)
             {
@@ -448,44 +423,41 @@ public static class VideoPlaybackService
                 {
                     var editor = session.EditorPlayer;
                     var presentation = session.PresentationPlayer;
-
-                    // Le lecteur qui avance sert de référence. L'autre est
-                    // corrigé uniquement si le décalage devient perceptible.
                     bool editorReady = session.EditorSurfaceReady;
                     bool presentationReady = session.PresentationSurfaceReady;
-                    var master = editorReady && editor.IsPlaying
+
+                    MediaPlayer? master = editorReady && editor.IsPlaying
                         ? editor
                         : presentationReady && presentation.IsPlaying
                             ? presentation
                             : null;
+
                     if (master is null)
                         continue;
 
-                    var follower = ReferenceEquals(master, editor) ? presentation : editor;
+                    MediaPlayer follower = ReferenceEquals(master, editor)
+                        ? presentation
+                        : editor;
+
                     bool followerReady = ReferenceEquals(follower, editor)
                         ? editorReady
                         : presentationReady;
+
                     if (!followerReady)
                         continue;
 
                     long delta = master.Time - follower.Time;
+                    // Éviter les repositionnements fréquents qui peuvent provoquer
+                    // des saccades ou des coupures audio.
                     if (Math.Abs(delta) > 900)
-                    var master = editor.IsPlaying ? editor : presentation;
-                    var follower = ReferenceEquals(master, editor) ? presentation : editor;
-
-                    if (!master.IsPlaying)
-                        continue;
-
-                    long delta = master.Time - follower.Time;
-                    if (Math.Abs(delta) > 450)
                         follower.Time = Math.Max(0, master.Time);
 
                     if (!follower.IsPlaying)
-                        follower.Play();
+                        TryPlay(follower);
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Video sync tick error: {ex}");
+                    Debug.WriteLine($"Video synchronization error: {ex}");
                 }
             }
         }
