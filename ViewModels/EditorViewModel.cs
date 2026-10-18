@@ -20,6 +20,7 @@ namespace StageFlow.ViewModels
         private double _selectedVideoPosition;
         private double _selectedVideoDuration;
         private bool _selectedVideoIsPlaying;
+        private bool _isVideoSeeking;
         private string _selectedVideoTimeLabel = "00:00 / 00:00";
 
         [ObservableProperty]
@@ -163,11 +164,16 @@ namespace StageFlow.ViewModels
             long position = VideoPlaybackService.GetPosition(video.Id);
             long duration = VideoPlaybackService.GetDuration(video.Id);
 
-            SelectedVideoPosition = Math.Clamp((double)position, 0, Math.Max(0, duration));
+            if (!_isVideoSeeking)
+                SelectedVideoPosition = Math.Clamp((double)position, 0, Math.Max(0, duration));
+
             SelectedVideoDuration = Math.Max(0, duration);
             SelectedVideoIsPlaying = VideoPlaybackService.IsPlaying(video.Id);
             SelectedVideoTimeLabel = $"{FormatVideoTime(position)} / {FormatVideoTime(duration)}";
         }
+
+        public void SetVideoSeeking(bool isSeeking) =>
+            _isVideoSeeking = isSeeking;
 
         public void SeekSelectedVideo(long milliseconds)
         {
@@ -175,6 +181,7 @@ namespace StageFlow.ViewModels
                 return;
 
             VideoPlaybackService.Seek(video.Id, milliseconds);
+            _isVideoSeeking = false;
             RefreshVideoPlaybackState();
         }
 
