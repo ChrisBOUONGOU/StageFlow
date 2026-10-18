@@ -271,7 +271,7 @@
                                       ColumnSpacing="6">
                                     <Button
                                         Grid.Column="0"
-                                        Content="{Binding SelectedVideoIsPlaying, StringFormat='▶ / Ⅱ'}"
+                                        Content="{Binding SelectedVideoPlayPauseLabel}"
                                         Click="VideoPlayPause_Click"
                                         Padding="10,5"
                                         MinWidth="56"/>
