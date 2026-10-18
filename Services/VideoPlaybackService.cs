@@ -330,18 +330,33 @@ public static class VideoPlaybackService
                 return;
         }
 
-        // Repli vers une surface réellement prête si la fenêtre active
-        // n'est pas disponible.
-        if (_presentationActive && session.PresentationSurfaceReady)
+        // Si le propriétaire a été détaché, choisir d'abord la surface de la
+        // fenêtre active si elle est prête.
+        bool preferredReady = _presentationActive
+            ? session.PresentationSurfaceReady
+            : session.EditorSurfaceReady;
+
+        if (preferredReady)
         {
-            session.AudioOwnerPresentation = true;
+            session.AudioOwnerPresentation = _presentationActive;
+            session.AudioOwnerChosen = true;
+            return;
+        }
+
+        // Repli vers une surface encore attachée.
+        if (_presentationActive && session.EditorSurfaceReady)
+        {
+            session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
         }
+<<<<<<< HEAD
+=======
         else if (session.EditorSurfaceReady)
         {
             session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
         }
+
         else if (session.PresentationSurfaceReady)
         {
             session.AudioOwnerPresentation = true;
@@ -353,40 +368,6 @@ public static class VideoPlaybackService
         }
     }
 
-    private static void EnsureAudioOwner(Session session)
-    {
-        if (session.AudioOwnerChosen)
-        {
-            bool ownerReady = session.AudioOwnerPresentation
-                ? session.PresentationSurfaceReady
-                : session.EditorSurfaceReady;
-
-            if (ownerReady)
-                return;
-        }
-
-        // Choisir une surface réellement prête. En présentation, la surface
-        // projetée est préférée si elle est disponible ; sinon utiliser l'éditeur.
-        if (_presentationActive && session.PresentationSurfaceReady)
-        {
-            session.AudioOwnerPresentation = true;
-            session.AudioOwnerChosen = true;
-        }
-        else if (session.EditorSurfaceReady)
-        {
-            session.AudioOwnerPresentation = false;
-            session.AudioOwnerChosen = true;
-        }
-        else if (session.PresentationSurfaceReady)
-        {
-            session.AudioOwnerPresentation = true;
-            session.AudioOwnerChosen = true;
-        }
-        else
-        {
-            session.AudioOwnerChosen = false;
-        }
-    }
 
     private static void ApplyVolume(Session session)
     {
