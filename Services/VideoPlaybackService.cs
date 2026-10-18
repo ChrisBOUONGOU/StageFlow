@@ -22,6 +22,7 @@ public static class VideoPlaybackService
         public required MediaPlayer PresentationPlayer { get; init; }
         public bool Loop { get; set; }
         public double Volume { get; set; }
+        public bool Muted { get; set; }
         public bool PlaybackHeld { get; set; }
         public bool EditorSurfaceReady { get; set; }
         public bool PresentationSurfaceReady { get; set; }
@@ -58,7 +59,8 @@ public static class VideoPlaybackService
                     EditorPlayer = CreatePlayer(path),
                     PresentationPlayer = CreatePlayer(path),
                     Loop = loop,
-                    Volume = Math.Clamp(volume, 0, 1)
+                    Volume = Math.Clamp(volume, 0, 1),
+                    Muted = video.Muted
                 };
 
                 Sessions[video.Id] = session;
@@ -68,6 +70,7 @@ public static class VideoPlaybackService
 
             session.Loop = loop;
             session.Volume = Math.Clamp(volume, 0, 1);
+            session.Muted = video.Muted;
             ApplyVolume(session);
 
             return presentation ? session.PresentationPlayer : session.EditorPlayer;
@@ -369,7 +372,7 @@ public static class VideoPlaybackService
 
     private static void ApplyVolume(Session session)
     {
-        int volume = (int)Math.Round(session.Volume * 100);
+        int volume = session.Muted ? 0 : (int)Math.Round(session.Volume * 100);
 
         try
         {
@@ -404,6 +407,18 @@ public static class VideoPlaybackService
                 return;
 
             session.Volume = Math.Clamp(volume, 0, 1);
+            ApplyVolume(session);
+        }
+    }
+
+    public static void SetMuted(Guid videoId, bool muted)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            session.Muted = muted;
             ApplyVolume(session);
         }
     }
