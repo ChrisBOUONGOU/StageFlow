@@ -30,6 +30,7 @@ public static class VideoPlaybackService
     private static readonly LibVLC LibVlc = new();
     private static readonly Dictionary<Guid, Session> Sessions = new();
     private static readonly Timer SyncTimer = new(SynchronizePlayers, null, 250, 250);
+    private static bool PresentationActive;
 
     public static MediaPlayer GetPlayer(
         VideoElement video,
@@ -62,8 +63,7 @@ public static class VideoPlaybackService
 
             session.Loop = loop;
             session.Volume = Math.Clamp(volume, 0, 1);
-            session.EditorPlayer.Volume = (int)Math.Round(session.Volume * 100);
-            session.PresentationPlayer.Volume = (int)Math.Round(session.Volume * 100);
+            ApplyVolume(session);
 
             var player = presentation ? session.PresentationPlayer : session.EditorPlayer;
             var other = presentation ? session.EditorPlayer : session.PresentationPlayer;
@@ -203,6 +203,23 @@ public static class VideoPlaybackService
         }
     }
 
+    public static void SetPresentationActive(bool active)
+    {
+        lock (Gate)
+        {
+            PresentationActive = active;
+            foreach (var session in Sessions.Values)
+                ApplyVolume(session);
+        }
+    }
+
+    private static void ApplyVolume(Session session)
+    {
+        int volume = (int)Math.Round(session.Volume * 100);
+        session.EditorPlayer.Volume = PresentationActive ? 0 : volume;
+        session.PresentationPlayer.Volume = PresentationActive ? volume : 0;
+    }
+
     public static void SetLoop(Guid videoId, bool loop)
     {
         lock (Gate)
@@ -220,9 +237,7 @@ public static class VideoPlaybackService
                 return;
 
             session.Volume = Math.Clamp(volume, 0, 1);
-            int vlcVolume = (int)Math.Round(session.Volume * 100);
-            session.EditorPlayer.Volume = vlcVolume;
-            session.PresentationPlayer.Volume = vlcVolume;
+            ApplyVolume(session);
         }
     }
 
