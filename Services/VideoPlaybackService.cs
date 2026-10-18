@@ -112,7 +112,14 @@ public static class VideoPlaybackService
             {
                 if (other.IsPlaying)
                 {
-                    player.Time = Math.Max(0, other.Time);
+                    bool playerOwnsAudio =
+                        session.AudioOwnerPresentation == presentation;
+
+                    // Ne jamais repositionner le lecteur audible s'il continue
+                    // déjà à jouer : un seek peut couper le son brièvement.
+                    if (!playerOwnsAudio || !player.IsPlaying)
+                        player.Time = Math.Max(0, other.Time);
+
                     TryPlay(player);
                 }
                 else if (autoPlay)
