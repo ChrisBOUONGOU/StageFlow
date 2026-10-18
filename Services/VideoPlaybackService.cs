@@ -29,6 +29,7 @@ public static class VideoPlaybackService
 
     private static readonly object Gate = new();
     private static readonly LibVLC LibVlc = new();
+    private static bool _presentationActive;
     private static readonly Dictionary<Guid, Session> Sessions = new();
     private static readonly Timer SyncTimer = new(SynchronizePlayers, null, 250, 250);
 
@@ -85,6 +86,11 @@ public static class VideoPlaybackService
                 session.PresentationSurfaceReady = ready;
             else
                 session.EditorSurfaceReady = ready;
+
+            // Le lecteur audio suit la fenêtre qui possède une surface vidéo
+            // réellement attachée. Cela évite de garder le son sur un lecteur
+            // d'éditeur momentanément détaché lors d'un rafraîchissement.
+            ApplyVolume(session);
 
             if (!ready || session.PlaybackHeld)
                 return;
@@ -241,19 +247,32 @@ public static class VideoPlaybackService
 
     public static void SetPresentationActive(bool active)
     {
-        // Le lecteur de l'éditeur conserve la sortie audio. On ne change pas
-        // de lecteur audio à l'ouverture de la présentation, ce qui évite
-        // les coupures provoquées par le basculement de la sortie sonore.
+        lock (Gate)
+        {
+            _presentationActive = active;
+
+            foreach (var session in Sessions.Values)
+                ApplyVolume(session);
+        }
     }
 
     private static void ApplyVolume(Session session)
     {
         int volume = (int)Math.Round(session.Volume * 100);
+
+        // Ne laisser qu'un seul lecteur produire le son. Pendant une
+        // présentation, privilégier le lecteur de présentation dès que sa
+        // surface est prête. Sinon, conserver le lecteur de l'éditeur.
+        bool presentationOwnsAudio =
+            _presentationActive && session.PresentationSurfaceReady;
+
+        if (!presentationOwnsAudio && !session.EditorSurfaceReady)
+            presentationOwnsAudio = session.PresentationSurfaceReady;
+
         try
         {
-            // Une seule sortie audio : le lecteur de l'éditeur.
-            session.EditorPlayer.Volume = volume;
-            session.PresentationPlayer.Volume = 0;
+            session.EditorPlayer.Volume = presentationOwnsAudio ? 0 : volume;
+            session.PresentationPlayer.Volume = presentationOwnsAudio ? volume : 0;
         }
         catch (Exception ex)
         {
