@@ -106,18 +106,28 @@ namespace StageFlow.ViewModels
                 if (SelectedElement is not VideoElement video)
                     return;
 
-                video.Volume =
-                    Math.Clamp(value, 0, 1);
-
+                video.Volume = Math.Clamp(value, 0, 1);
                 OnPropertyChanged();
 
                 VideoPlaybackService.SetVolume(video.Id, video.Volume);
-                MainViewModel.NotifyVideoVolumeChanged(
-                    video.Volume);
+                MainViewModel.NotifyVideoVolumeChanged(video.Volume);
             }
         }
 
+        public bool SelectedVideoMuted
+        {
+            get => SelectedElement is VideoElement video && video.Muted;
 
+            set
+            {
+                if (SelectedElement is not VideoElement video)
+                    return;
+
+                video.Muted = value;
+                OnPropertyChanged();
+                VideoPlaybackService.SetMuted(video.Id, video.Muted);
+            }
+        }
 
         public double SelectedVideoPosition
         {
@@ -263,6 +273,7 @@ namespace StageFlow.ViewModels
             OnPropertyChanged(nameof(SelectedAutoPlay));
             OnPropertyChanged(nameof(SelectedLoop));
             OnPropertyChanged(nameof(SelectedVideoVolume));
+            OnPropertyChanged(nameof(SelectedVideoMuted));
             RefreshVideoPlaybackState();
 
             OnPropertyChanged(nameof(HasSelectedSlide));
