@@ -133,8 +133,15 @@ namespace StageFlow.ViewModels
         public bool SelectedVideoIsPlaying
         {
             get => _selectedVideoIsPlaying;
-            private set => SetProperty(ref _selectedVideoIsPlaying, value);
+            private set
+            {
+                if (SetProperty(ref _selectedVideoIsPlaying, value))
+                    OnPropertyChanged(nameof(SelectedVideoPlayPauseLabel));
+            }
         }
+
+        public string SelectedVideoPlayPauseLabel =>
+            SelectedVideoIsPlaying ? "Ⅱ Pause" : "▶ Lecture";
 
         public string SelectedVideoTimeLabel
         {
@@ -161,6 +168,18 @@ namespace StageFlow.ViewModels
             SelectedVideoIsPlaying = VideoPlaybackService.IsPlaying(video.Id);
             SelectedVideoTimeLabel = $"{FormatVideoTime(position)} / {FormatVideoTime(duration)}";
         }
+
+        public void SeekSelectedVideo(long milliseconds)
+        {
+            if (SelectedElement is not VideoElement video)
+                return;
+
+            VideoPlaybackService.Seek(video.Id, milliseconds);
+            RefreshVideoPlaybackState();
+        }
+
+        public void RefreshVideoPlaybackStateForControls() =>
+            RefreshVideoPlaybackState();
 
         private static string FormatVideoTime(long milliseconds)
         {
