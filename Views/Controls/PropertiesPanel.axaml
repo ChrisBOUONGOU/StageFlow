@@ -315,7 +315,11 @@
                             Margin="0,5,0,0"
                             Foreground="{DynamicResource AppSecondaryTextBrush}"/>
 
-						<Slider
+						<CheckBox
+                            Content="Désactiver le son"
+                            IsChecked="{Binding SelectedVideoMuted, Mode=TwoWay}"/>
+
+                        <Slider
                             Minimum="0"
                             Maximum="1"
                             Value="{Binding SelectedVideoVolume}"/>
