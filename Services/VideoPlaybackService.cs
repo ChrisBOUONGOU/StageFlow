@@ -349,8 +349,6 @@ public static class VideoPlaybackService
             session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
         }
-<<<<<<< HEAD
-=======
         else if (session.EditorSurfaceReady)
         {
             session.AudioOwnerPresentation = false;
