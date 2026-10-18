@@ -100,6 +100,44 @@ public static class VideoPlaybackService
         }
     }
 
+    public static bool IsPlaying(Guid videoId)
+    {
+        lock (Gate)
+            return Sessions.TryGetValue(videoId, out var session) &&
+                   (session.EditorPlayer.IsPlaying || session.PresentationPlayer.IsPlaying);
+    }
+
+    public static void Toggle(Guid videoId)
+    {
+        if (IsPlaying(videoId))
+            Pause(videoId);
+        else
+            Resume(videoId);
+    }
+
+    public static void Restart(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            session.PlaybackHeld = false;
+            try
+            {
+                session.EditorPlayer.Time = 0;
+                session.PresentationPlayer.Time = 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video restart error: {ex}");
+            }
+
+            TryPlay(session.EditorPlayer);
+            TryPlay(session.PresentationPlayer);
+        }
+    }
+
     public static void Pause(Guid videoId)
     {
         lock (Gate)
