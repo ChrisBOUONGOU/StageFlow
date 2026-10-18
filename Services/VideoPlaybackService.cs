@@ -23,6 +23,7 @@ public static class VideoPlaybackService
         public required MediaPlayer PresentationPlayer { get; init; }
         public bool Loop { get; set; }
         public double Volume { get; set; }
+        public bool PlaybackHeld { get; set; }
     }
 
     private static readonly object Gate = new();
@@ -90,7 +91,8 @@ public static class VideoPlaybackService
     {
         lock (Gate)
         {
-            if (!Sessions.TryGetValue(videoId, out var session))
+            if (!Sessions.TryGetValue(videoId, out var session) ||
+                session.PlaybackHeld)
                 return;
 
             TryPlay(session.EditorPlayer);
@@ -105,12 +107,24 @@ public static class VideoPlaybackService
             if (!Sessions.TryGetValue(videoId, out var session))
                 return;
 
+            session.PlaybackHeld = true;
             session.EditorPlayer.Pause();
             session.PresentationPlayer.Pause();
         }
     }
 
-    public static void Resume(Guid videoId) => Start(videoId);
+    public static void Resume(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            session.PlaybackHeld = false;
+            TryPlay(session.EditorPlayer);
+            TryPlay(session.PresentationPlayer);
+        }
+    }
 
     public static void Stop(Guid videoId, bool resetPosition = false)
     {
@@ -119,6 +133,7 @@ public static class VideoPlaybackService
             if (!Sessions.TryGetValue(videoId, out var session))
                 return;
 
+            session.PlaybackHeld = true;
             session.EditorPlayer.Stop();
             session.PresentationPlayer.Stop();
 
@@ -223,11 +238,27 @@ public static class VideoPlaybackService
     {
         lock (Gate)
         {
-            if (!Sessions.TryGetValue(videoId, out var session) || !session.Loop)
+            if (!Sessions.TryGetValue(videoId, out var session))
                 return;
+
+            if (!session.Loop)
+            {
+                session.PlaybackHeld = true;
+                try
+                {
+                    session.EditorPlayer.Pause();
+                    session.PresentationPlayer.Pause();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Video end handling error: {ex}");
+                }
+                return;
+            }
 
             try
             {
+                session.PlaybackHeld = false;
                 session.EditorPlayer.Time = 0;
                 session.PresentationPlayer.Time = 0;
                 TryPlay(session.EditorPlayer);
