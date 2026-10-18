@@ -366,40 +366,7 @@ public static class VideoPlaybackService
         }
     }
 
-    private static void EnsureAudioOwner(Session session)
-    {
-        if (session.AudioOwnerChosen)
-        {
-            bool ownerReady = session.AudioOwnerPresentation
-                ? session.PresentationSurfaceReady
-                : session.EditorSurfaceReady;
-
-            if (ownerReady)
-                return;
-        }
-
-        // Choisir une surface réellement prête. En présentation, la surface
-        // projetée est préférée si elle est disponible ; sinon utiliser l'éditeur.
-        if (_presentationActive && session.PresentationSurfaceReady)
-        {
-            session.AudioOwnerPresentation = true;
-            session.AudioOwnerChosen = true;
-        }
-        else if (session.EditorSurfaceReady)
-        {
-            session.AudioOwnerPresentation = false;
-            session.AudioOwnerChosen = true;
-        }
-        else if (session.PresentationSurfaceReady)
-        {
-            session.AudioOwnerPresentation = true;
-            session.AudioOwnerChosen = true;
-        }
-        else
-        {
-            session.AudioOwnerChosen = false;
-        }
-    }
+    
 
     private static void ApplyVolume(Session session)
     {
