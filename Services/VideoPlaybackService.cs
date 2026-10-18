@@ -347,25 +347,29 @@ public static class VideoPlaybackService
         }
 
         // Repli vers une surface encore attachée.
-        if (_presentationActive && session.EditorSurfaceReady)
+        if (session.EditorSurfaceReady)
         {
             session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
-        }
-        else if (session.EditorSurfaceReady)
-        {
-            session.AudioOwnerPresentation = false;
-            session.AudioOwnerChosen = true;
+            return;
         }
 
-        else if (session.PresentationSurfaceReady)
+        if (session.PresentationSurfaceReady)
         {
             session.AudioOwnerPresentation = true;
             session.AudioOwnerChosen = true;
+            return;
         }
-        else
+
+        // Pendant la transition entre les deux fenêtres, il peut n'y avoir
+        // momentanément aucune surface attachée. Ne pas désactiver le son :
+        // conserver le dernier lecteur audio jusqu'à ce que l'autre surface
+        // soit prête. Au premier démarrage, choisir le lecteur de la fenêtre
+        // active afin que le volume ne reste jamais à zéro par défaut.
+        if (!session.AudioOwnerChosen)
         {
-            session.AudioOwnerChosen = false;
+            session.AudioOwnerPresentation = _presentationActive;
+            session.AudioOwnerChosen = true;
         }
     }
 
