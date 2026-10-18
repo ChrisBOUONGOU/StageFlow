@@ -203,6 +203,15 @@ public static class VideoPlaybackService
         }
     }
 
+    public static void SetLoop(Guid videoId, bool loop)
+    {
+        lock (Gate)
+        {
+            if (Sessions.TryGetValue(videoId, out var session))
+                session.Loop = loop;
+        }
+    }
+
     public static void SetVolume(Guid videoId, double volume)
     {
         lock (Gate)
