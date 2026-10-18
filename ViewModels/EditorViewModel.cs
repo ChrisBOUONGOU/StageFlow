@@ -82,7 +82,8 @@ namespace StageFlow.ViewModels
 
                 OnPropertyChanged();
 
-                MainViewModel.NotifyVideoLoopChanged(true);
+                VideoPlaybackService.SetLoop(video.Id, video.Loop);
+                MainViewModel.NotifyVideoLoopChanged(video.Loop);
             }
         }
 
@@ -103,6 +104,7 @@ namespace StageFlow.ViewModels
 
                 OnPropertyChanged();
 
+                VideoPlaybackService.SetVolume(video.Id, video.Volume);
                 MainViewModel.NotifyVideoVolumeChanged(
                     video.Volume);
             }
