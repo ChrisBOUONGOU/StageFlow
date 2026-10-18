@@ -419,10 +419,13 @@ namespace StageFlow.Services
                             false
                     };
 
-                // La création ou le rafraîchissement de la vue ne doit pas
-                // remettre à zéro une vidéo déjà en cours.
-                if (video.AutoPlay)
-                    VideoPlaybackService.Start(video.Id);
+                // Démarrer après l'attachement de la surface native à la fenêtre.
+                videoView.AttachedToVisualTree += (_, _) =>
+                    VideoPlaybackService.NotifySurfaceReady(
+                        video.Id, presentationMode, ready: true, autoPlay: video.AutoPlay);
+                videoView.DetachedFromVisualTree += (_, _) =>
+                    VideoPlaybackService.NotifySurfaceReady(
+                        video.Id, presentationMode, ready: false);
 
                 // -------------------------------------------------
                 // CONTAINER VIDÉO
