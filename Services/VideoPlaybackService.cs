@@ -251,6 +251,35 @@ public static class VideoPlaybackService
         // de la session de présentation, pas celle d'un VideoView.
     }
 
+    public static void StopExcept(IEnumerable<Guid> activeVideoIds)
+    {
+        var active = new HashSet<Guid>(activeVideoIds);
+
+        lock (Gate)
+        {
+            foreach (var entry in Sessions)
+            {
+                if (active.Contains(entry.Key))
+                    continue;
+
+                var session = entry.Value;
+                session.PlaybackHeld = true;
+
+                try
+                {
+                    session.EditorPlayer.Stop();
+                    session.PresentationPlayer.Stop();
+                    session.EditorPlayer.Time = 0;
+                    session.PresentationPlayer.Time = 0;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Inactive video stop error: {ex}");
+                }
+            }
+        }
+    }
+
     public static void StopAll(bool resetPosition = false)
     {
         lock (Gate)
