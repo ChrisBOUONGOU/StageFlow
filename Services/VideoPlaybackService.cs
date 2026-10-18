@@ -308,7 +308,61 @@ public static class VideoPlaybackService
             _presentationActive = active;
 
             foreach (var session in Sessions.Values)
+            {
+                EnsureAudioOwner(session);
                 ApplyVolume(session);
+            }
+        }
+    }
+
+    private static void EnsureAudioOwner(Session session)
+    {
+        // Le propriétaire audio suit la fenêtre active dès que sa surface
+        // est prête. Cela évite de conserver un lecteur devenu inadapté lors
+        // de l'ouverture ou de la fermeture de la présentation.
+        bool preferredReady = _presentationActive
+            ? session.PresentationSurfaceReady
+            : session.EditorSurfaceReady;
+
+        if (preferredReady)
+        {
+            session.AudioOwnerPresentation = _presentationActive;
+            session.AudioOwnerChosen = true;
+            return;
+        }
+
+        // Si la fenêtre privilégiée n'est pas prête, conserver le propriétaire
+        // actuel tant que sa surface reste disponible, afin d'éviter une coupure.
+        if (session.AudioOwnerChosen)
+        {
+            bool ownerReady = session.AudioOwnerPresentation
+                ? session.PresentationSurfaceReady
+                : session.EditorSurfaceReady;
+
+            if (ownerReady)
+                return;
+        }
+
+        // Repli vers une surface réellement prête si la fenêtre active
+        // n'est pas disponible.
+        if (_presentationActive && session.PresentationSurfaceReady)
+        {
+            session.AudioOwnerPresentation = true;
+            session.AudioOwnerChosen = true;
+        }
+        else if (session.EditorSurfaceReady)
+        {
+            session.AudioOwnerPresentation = false;
+            session.AudioOwnerChosen = true;
+        }
+        else if (session.PresentationSurfaceReady)
+        {
+            session.AudioOwnerPresentation = true;
+            session.AudioOwnerChosen = true;
+        }
+        else
+        {
+            session.AudioOwnerChosen = false;
         }
     }
 
