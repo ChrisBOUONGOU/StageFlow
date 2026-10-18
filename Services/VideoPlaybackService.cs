@@ -66,6 +66,12 @@ public static class VideoPlaybackService
                 Sessions[video.Id] = session;
                 session.EditorPlayer.EndReached += (_, _) => HandleEnd(video.Id);
                 session.PresentationPlayer.EndReached += (_, _) => HandleEnd(video.Id);
+
+                // Réappliquer le volume une fois que LibVLC a réellement démarré
+                // la lecture : le moteur audio Windows peut initialiser sa session
+                // après le premier réglage de Volume effectué avant Play().
+                session.EditorPlayer.Playing += (_, _) => ReapplyVolume(video.Id);
+                session.PresentationPlayer.Playing += (_, _) => ReapplyVolume(video.Id);
             }
 
             session.Loop = loop;
@@ -378,6 +384,15 @@ public static class VideoPlaybackService
         }
     }
 
+
+    private static void ReapplyVolume(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (Sessions.TryGetValue(videoId, out var session))
+                ApplyVolume(session);
+        }
+    }
 
     private static void ApplyVolume(Session session)
     {
