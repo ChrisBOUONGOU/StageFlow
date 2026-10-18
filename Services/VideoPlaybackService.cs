@@ -24,6 +24,8 @@ public static class VideoPlaybackService
         public bool Loop { get; set; }
         public double Volume { get; set; }
         public bool PlaybackHeld { get; set; }
+        public bool EditorSurfaceReady { get; set; }
+        public bool PresentationSurfaceReady { get; set; }
     }
 
     private static readonly object Gate = new();
@@ -65,6 +67,70 @@ public static class VideoPlaybackService
             session.Volume = Math.Clamp(volume, 0, 1);
             ApplyVolume(session);
 
+            return presentation ? session.PresentationPlayer : session.EditorPlayer;
+        }
+    }
+
+    public static void Start(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session) ||
+                session.PlaybackHeld)
+                return;
+
+            PlayReadyPlayers(session);
+        }
+    }
+
+    /// <summary>
+    /// Signale que la surface vidéo native est attachée à la fenêtre.
+    /// LibVLC ne doit pas démarrer avant cette étape : sinon il peut ouvrir
+    /// une fenêtre vidéo séparée ou laisser une surface noire.
+    /// </summary>
+    public static void NotifySurfaceReady(Guid videoId, bool presentation, bool ready, bool autoPlay = false)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return;
+
+            if (presentation)
+                session.PresentationSurfaceReady = ready;
+            else
+                session.EditorSurfaceReady = ready;
+
+            if (!ready || session.PlaybackHeld)
+                return;
+
+            var player = presentation ? session.PresentationPlayer : session.EditorPlayer;
+            var other = presentation ? session.EditorPlayer : session.PresentationPlayer;
+
+            try
+            {
+                if (other.IsPlaying)
+                {
+                    player.Time = Math.Max(0, other.Time);
+                    TryPlay(player);
+                }
+                else if (autoPlay)
+                {
+                    PlayReadyPlayers(session);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video surface initialization error: {ex}");
+            }
+        }
+    }
+
+    private static void PlayReadyPlayers(Session session)
+    {
+        if (session.EditorSurfaceReady)
+            TryPlay(session.EditorPlayer);
+        if (session.PresentationSurfaceReady)
+            TryPlay(session.PresentationPlayer);
             var player = presentation ? session.PresentationPlayer : session.EditorPlayer;
             var other = presentation ? session.EditorPlayer : session.PresentationPlayer;
 
@@ -133,6 +199,7 @@ public static class VideoPlaybackService
                 Debug.WriteLine($"Video restart error: {ex}");
             }
 
+            PlayReadyPlayers(session);
             TryPlay(session.EditorPlayer);
             TryPlay(session.PresentationPlayer);
         }
@@ -216,6 +283,10 @@ public static class VideoPlaybackService
     private static void ApplyVolume(Session session)
     {
         int volume = (int)Math.Round(session.Volume * 100);
+        // Garder une seule source audio stable pour éviter une coupure au
+        // changement de fenêtre : le lecteur éditeur porte toujours le son.
+        session.EditorPlayer.Volume = volume;
+        session.PresentationPlayer.Volume = 0;
         session.EditorPlayer.Volume = PresentationActive ? 0 : volume;
         session.PresentationPlayer.Volume = PresentationActive ? volume : 0;
     }
@@ -380,6 +451,25 @@ public static class VideoPlaybackService
 
                     // Le lecteur qui avance sert de référence. L'autre est
                     // corrigé uniquement si le décalage devient perceptible.
+                    bool editorReady = session.EditorSurfaceReady;
+                    bool presentationReady = session.PresentationSurfaceReady;
+                    var master = editorReady && editor.IsPlaying
+                        ? editor
+                        : presentationReady && presentation.IsPlaying
+                            ? presentation
+                            : null;
+                    if (master is null)
+                        continue;
+
+                    var follower = ReferenceEquals(master, editor) ? presentation : editor;
+                    bool followerReady = ReferenceEquals(follower, editor)
+                        ? editorReady
+                        : presentationReady;
+                    if (!followerReady)
+                        continue;
+
+                    long delta = master.Time - follower.Time;
+                    if (Math.Abs(delta) > 900)
                     var master = editor.IsPlaying ? editor : presentation;
                     var follower = ReferenceEquals(master, editor) ? presentation : editor;
 

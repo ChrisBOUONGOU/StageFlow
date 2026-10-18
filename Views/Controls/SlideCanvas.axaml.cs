@@ -723,6 +723,13 @@ private void ShowTextColorPicker(Button target)
         IsHitTestVisible = false
     };
 
+            videoView.AttachedToVisualTree += (_, _) =>
+                VideoPlaybackService.NotifySurfaceReady(
+                    video.Id, presentation: false, ready: true, autoPlay: video.AutoPlay);
+            videoView.DetachedFromVisualTree += (_, _) =>
+                VideoPlaybackService.NotifySurfaceReady(
+                    video.Id, presentation: false, ready: false);
+
             // =================================================
             // CONTAINER
             // =================================================
