@@ -354,6 +354,7 @@ public static class VideoPlaybackService
             session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
         }
+
         else if (session.PresentationSurfaceReady)
         {
             session.AudioOwnerPresentation = true;
@@ -364,6 +365,7 @@ public static class VideoPlaybackService
             session.AudioOwnerChosen = false;
         }
     }
+
 
     private static void ApplyVolume(Session session)
     {
