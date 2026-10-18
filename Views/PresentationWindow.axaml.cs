@@ -97,10 +97,6 @@ public partial class PresentationWindow : Window
 
     private void UpdateSlide()
     {
-        // Arrêter et remettre les vidéos du slide précédent
-        // au début avant de construire le nouveau slide.
-        SlideRenderer.StopAllVideos();
-
         var slide =
             _viewModel.SelectedSlide;
 
@@ -297,8 +293,9 @@ public partial class PresentationWindow : Window
         _viewModel.PropertyChanged -=
             ViewModel_PropertyChanged;
 
-        // Nettoyage des vidéos de présentation
-        SlideRenderer.StopAllVideos();
+        // La fermeture de cette fenêtre ne doit pas interrompre la lecture
+        // qui continue dans l'éditeur.
+        VideoPlaybackService.KeepPlaybackAlive();
 
         base.OnClosed(e);
     }
