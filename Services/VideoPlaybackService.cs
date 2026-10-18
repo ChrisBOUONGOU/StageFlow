@@ -340,15 +340,13 @@ public static class VideoPlaybackService
                 ? session.PresentationSurfaceReady
                 : session.EditorSurfaceReady;
 
-            // Une surface peut être détachée lors d'un changement de fenêtre
-            // alors que son MediaPlayer continue la lecture audio. Ne pas
-            // transférer l'audio à l'autre lecteur dans ce cas : changer de
-            // MediaPlayer en cours de lecture coupe la session audio Windows.
-            bool ownerStillPlaying = session.AudioOwnerPresentation
-                ? session.PresentationPlayer.IsPlaying
-                : session.EditorPlayer.IsPlaying;
-
-            if (ownerReady || ownerStillPlaying)
+            // Tant que la surface du propriétaire est attachée, conserver ce
+            // lecteur. Dès qu'elle est détachée, laisser la logique ci-dessous
+            // choisir la surface prête de la fenêtre active. En particulier,
+            // au retour de Présentation, le lecteur de SlideCanvas doit
+            // redevenir propriétaire audio même si l'ancien lecteur continue
+            // encore à signaler IsPlaying.
+            if (ownerReady)
                 return;
         }
 
