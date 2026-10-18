@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -10,6 +11,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
+using TextElement = StageFlow.Models.TextElement;
 
 namespace StageFlow.Services
 {
@@ -22,7 +25,7 @@ namespace StageFlow.Services
         public static Control CreateSlide(
             Slide slide,
             string? projectFilePath = null,
-            bool presentationMode= true)
+            bool presentationMode = true)
         {
             var canvas = new Canvas
             {
