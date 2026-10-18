@@ -91,15 +91,10 @@ public static class VideoPlaybackService
             else
                 session.EditorSurfaceReady = ready;
 
-            // Verrouiller le lecteur audio sur la première surface prête.
-            // Ne pas commuter le son lorsque l'on ouvre/ferme la présentation
-            // ou lorsqu'une vue est momentanément détachée.
-            if (ready && !session.AudioOwnerChosen)
-            {
-                session.AudioOwnerPresentation = presentation;
-                session.AudioOwnerChosen = true;
-            }
-
+            // Garder le propriétaire audio tant que sa surface existe.
+            // Si elle disparaît, basculer vers l'autre lecteur prêt au lieu
+            // de laisser les deux lecteurs muets.
+            EnsureAudioOwner(session);
             ApplyVolume(session);
 
             if (!ready || session.PlaybackHeld)
@@ -317,13 +312,45 @@ public static class VideoPlaybackService
         }
     }
 
+    private static void EnsureAudioOwner(Session session)
+    {
+        if (session.AudioOwnerChosen)
+        {
+            bool ownerReady = session.AudioOwnerPresentation
+                ? session.PresentationSurfaceReady
+                : session.EditorSurfaceReady;
+
+            if (ownerReady)
+                return;
+        }
+
+        // Choisir une surface réellement prête. En présentation, la surface
+        // projetée est préférée si elle est disponible ; sinon utiliser l'éditeur.
+        if (_presentationActive && session.PresentationSurfaceReady)
+        {
+            session.AudioOwnerPresentation = true;
+            session.AudioOwnerChosen = true;
+        }
+        else if (session.EditorSurfaceReady)
+        {
+            session.AudioOwnerPresentation = false;
+            session.AudioOwnerChosen = true;
+        }
+        else if (session.PresentationSurfaceReady)
+        {
+            session.AudioOwnerPresentation = true;
+            session.AudioOwnerChosen = true;
+        }
+        else
+        {
+            session.AudioOwnerChosen = false;
+        }
+    }
+
     private static void ApplyVolume(Session session)
     {
         int volume = (int)Math.Round(session.Volume * 100);
 
-        // Garder un seul lecteur audio pendant toute la session. Avant que
-        // la première surface soit prête, les deux lecteurs restent muets ;
-        // NotifySurfaceReady choisira le propriétaire avant le démarrage.
         try
         {
             bool editorOwnsAudio =
