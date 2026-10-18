@@ -370,6 +370,9 @@ public static class VideoPlaybackService
         {
             foreach (var session in Sessions.Values)
             {
+                if (session.PlaybackHeld)
+                    continue;
+
                 try
                 {
                     var editor = session.EditorPlayer;
