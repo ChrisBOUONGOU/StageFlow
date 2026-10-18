@@ -317,9 +317,21 @@ public static class VideoPlaybackService
 
     private static void EnsureAudioOwner(Session session)
     {
-        // Le propriétaire audio suit la fenêtre active dès que sa surface
-        // est prête. Cela évite de conserver un lecteur devenu inadapté lors
-        // de l'ouverture ou de la fermeture de la présentation.
+        // Ne pas changer de lecteur audio simplement parce que la fenêtre active
+        // change. Garder le propriétaire actuel tant que sa surface existe :
+        // le changement de MediaPlayer en cours de lecture peut couper le son.
+        if (session.AudioOwnerChosen)
+        {
+            bool ownerReady = session.AudioOwnerPresentation
+                ? session.PresentationSurfaceReady
+                : session.EditorSurfaceReady;
+
+            if (ownerReady)
+                return;
+        }
+
+        // Si le propriétaire a été détaché, choisir d'abord la surface de la
+        // fenêtre active si elle est prête.
         bool preferredReady = _presentationActive
             ? session.PresentationSurfaceReady
             : session.EditorSurfaceReady;
@@ -331,23 +343,10 @@ public static class VideoPlaybackService
             return;
         }
 
-        // Si la fenêtre privilégiée n'est pas prête, conserver le propriétaire
-        // actuel tant que sa surface reste disponible, afin d'éviter une coupure.
-        if (session.AudioOwnerChosen)
+        // Repli vers une surface encore attachée.
+        if (_presentationActive && session.EditorSurfaceReady)
         {
-            bool ownerReady = session.AudioOwnerPresentation
-                ? session.PresentationSurfaceReady
-                : session.EditorSurfaceReady;
-
-            if (ownerReady)
-                return;
-        }
-
-        // Repli vers une surface réellement prête si la fenêtre active
-        // n'est pas disponible.
-        if (_presentationActive && session.PresentationSurfaceReady)
-        {
-            session.AudioOwnerPresentation = true;
+            session.AudioOwnerPresentation = false;
             session.AudioOwnerChosen = true;
         }
         else if (session.EditorSurfaceReady)
