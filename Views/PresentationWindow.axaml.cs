@@ -298,7 +298,8 @@ public partial class PresentationWindow : Window
             ViewModel_PropertyChanged;
 
         // La fermeture de cette fenêtre ne doit pas interrompre la lecture.
-        // Le son revient à l'éditeur, qui conserve sa propre surface vidéo.
+        // Le lecteur audio reste le même pendant toute la session pour éviter
+        // une coupure lorsque les surfaces changent.
         VideoPlaybackService.SetPresentationActive(false);
         VideoPlaybackService.KeepPlaybackAlive();
 
