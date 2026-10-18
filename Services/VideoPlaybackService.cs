@@ -71,6 +71,11 @@ public static class VideoPlaybackService
             session.Loop = loop;
             session.Volume = Math.Clamp(volume, 0, 1);
             session.Muted = video.Muted;
+
+            // Choisir immédiatement un propriétaire audio, même avant
+            // l'attachement du VideoView. Sinon ApplyVolume peut mettre les
+            // deux lecteurs à 0 pendant le démarrage initial.
+            EnsureAudioOwner(session);
             ApplyVolume(session);
 
             return presentation ? session.PresentationPlayer : session.EditorPlayer;
