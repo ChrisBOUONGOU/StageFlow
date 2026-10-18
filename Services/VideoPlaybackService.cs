@@ -128,6 +128,50 @@ public static class VideoPlaybackService
         }
     }
 
+    public static long GetPosition(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return 0;
+
+            try
+            {
+                long editorTime = session.EditorPlayer.Time;
+                long presentationTime = session.PresentationPlayer.Time;
+                return Math.Max(0, _presentationActive && session.PresentationSurfaceReady
+                    ? presentationTime
+                    : editorTime);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video position read error: {ex}");
+                return 0;
+            }
+        }
+    }
+
+    public static long GetDuration(Guid videoId)
+    {
+        lock (Gate)
+        {
+            if (!Sessions.TryGetValue(videoId, out var session))
+                return 0;
+
+            try
+            {
+                long presentationLength = session.PresentationPlayer.Length;
+                long editorLength = session.EditorPlayer.Length;
+                return Math.Max(0, presentationLength > 0 ? presentationLength : editorLength);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Video duration read error: {ex}");
+                return 0;
+            }
+        }
+    }
+
     public static bool IsPlaying(Guid videoId)
     {
         lock (Gate)
