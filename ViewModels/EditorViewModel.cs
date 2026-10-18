@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StageFlow.Models;
@@ -15,6 +16,12 @@ namespace StageFlow.ViewModels
     public partial class EditorViewModel : ObservableObject
     {
         private readonly MainWindowViewModel _mainViewModel;
+        private readonly DispatcherTimer _videoStatusTimer;
+        private double _selectedVideoPosition;
+        private double _selectedVideoDuration;
+        private bool _selectedVideoIsPlaying;
+        private bool _isVideoSeeking;
+        private string _selectedVideoTimeLabel = "00:00 / 00:00";
 
         [ObservableProperty]
         private SlideElement? selectedElement;
@@ -112,9 +119,96 @@ namespace StageFlow.ViewModels
 
 
 
+        public double SelectedVideoPosition
+        {
+            get => _selectedVideoPosition;
+            private set => SetProperty(ref _selectedVideoPosition, value);
+        }
+
+        public double SelectedVideoDuration
+        {
+            get => _selectedVideoDuration;
+            private set => SetProperty(ref _selectedVideoDuration, value);
+        }
+
+        public bool SelectedVideoIsPlaying
+        {
+            get => _selectedVideoIsPlaying;
+            private set
+            {
+                if (SetProperty(ref _selectedVideoIsPlaying, value))
+                    OnPropertyChanged(nameof(SelectedVideoPlayPauseLabel));
+            }
+        }
+
+        public string SelectedVideoPlayPauseLabel =>
+            SelectedVideoIsPlaying ? "Ⅱ Pause" : "▶ Lecture";
+
+        public string SelectedVideoTimeLabel
+        {
+            get => _selectedVideoTimeLabel;
+            private set => SetProperty(ref _selectedVideoTimeLabel, value);
+        }
+
+        private void RefreshVideoPlaybackState()
+        {
+            if (SelectedElement is not VideoElement video)
+            {
+                SelectedVideoPosition = 0;
+                SelectedVideoDuration = 0;
+                SelectedVideoIsPlaying = false;
+                SelectedVideoTimeLabel = "00:00 / 00:00";
+                return;
+            }
+
+            long position = VideoPlaybackService.GetPosition(video.Id);
+            long duration = VideoPlaybackService.GetDuration(video.Id);
+
+            if (!_isVideoSeeking)
+                SelectedVideoPosition = Math.Clamp((double)position, 0, Math.Max(0, duration));
+
+            SelectedVideoDuration = Math.Max(0, duration);
+            SelectedVideoIsPlaying = VideoPlaybackService.IsPlaying(video.Id);
+            SelectedVideoTimeLabel = $"{FormatVideoTime(position)} / {FormatVideoTime(duration)}";
+        }
+
+        public void SetVideoSeeking(bool isSeeking) =>
+            _isVideoSeeking = isSeeking;
+
+        public void SeekSelectedVideo(long milliseconds)
+        {
+            if (SelectedElement is not VideoElement video)
+                return;
+
+            VideoPlaybackService.Seek(video.Id, milliseconds);
+            _isVideoSeeking = false;
+            RefreshVideoPlaybackState();
+        }
+
+        public void RefreshVideoPlaybackStateForControls() =>
+            RefreshVideoPlaybackState();
+
+        private static string FormatVideoTime(long milliseconds)
+        {
+            if (milliseconds <= 0)
+                return "00:00";
+
+            var time = TimeSpan.FromMilliseconds(milliseconds);
+            return time.TotalHours >= 1
+                ? $"{(int)time.TotalHours:00}:{time.Minutes:00}:{time.Seconds:00}"
+                : $"{time.Minutes:00}:{time.Seconds:00}";
+        }
+
         public EditorViewModel(MainWindowViewModel mainViewModel)
         {
             _mainViewModel = mainViewModel;
+
+            _videoStatusTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(250)
+            };
+            _videoStatusTimer.Tick += (_, _) => RefreshVideoPlaybackState();
+            _videoStatusTimer.Start();
 
             _mainViewModel.PropertyChanged += (_, e) =>
             {
@@ -169,6 +263,7 @@ namespace StageFlow.ViewModels
             OnPropertyChanged(nameof(SelectedAutoPlay));
             OnPropertyChanged(nameof(SelectedLoop));
             OnPropertyChanged(nameof(SelectedVideoVolume));
+            RefreshVideoPlaybackState();
 
             OnPropertyChanged(nameof(HasSelectedSlide));
             OnPropertyChanged(nameof(SelectedTransitionType));
