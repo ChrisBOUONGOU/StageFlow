@@ -252,6 +252,15 @@
                             Background="{DynamicResource AppBorderBrush}"
                             Margin="0,4"/>
 
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                Content="▶ / Ⅱ"
+                                Click="VideoPlayPause_Click"/>
+                            <Button
+                                Content="⏮ Restart"
+                                Click="VideoRestart_Click"/>
+                        </StackPanel>
+
 						<CheckBox
                             Content="AutoPlay"
                             IsChecked="{Binding SelectedAutoPlay}"/>

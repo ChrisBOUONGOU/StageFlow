@@ -67,6 +67,8 @@ public partial class PresentationWindow : Window
         WindowState =
             WindowState.FullScreen;
 
+        VideoPlaybackService.SetPresentationActive(true);
+
         Activate();
 
         Focus();
@@ -97,12 +99,15 @@ public partial class PresentationWindow : Window
 
     private void UpdateSlide()
     {
-        // Arrêter et remettre les vidéos du slide précédent
-        // au début avant de construire le nouveau slide.
-        SlideRenderer.StopAllVideos();
-
         var slide =
             _viewModel.SelectedSlide;
+
+        VideoPlaybackService.StopExcept(
+            slide?.Elements
+                .OfType<VideoElement>()
+                .Where(video => video.IsVisible)
+                .Select(video => video.Id)
+            ?? Enumerable.Empty<Guid>());
 
         if (slide == null)
         {
@@ -297,8 +302,10 @@ public partial class PresentationWindow : Window
         _viewModel.PropertyChanged -=
             ViewModel_PropertyChanged;
 
-        // Nettoyage des vidéos de présentation
-        SlideRenderer.StopAllVideos();
+        // La fermeture de cette fenêtre ne doit pas interrompre la lecture.
+        // Le son revient à l'éditeur, qui conserve sa propre surface vidéo.
+        VideoPlaybackService.SetPresentationActive(false);
+        VideoPlaybackService.KeepPlaybackAlive();
 
         base.OnClosed(e);
     }

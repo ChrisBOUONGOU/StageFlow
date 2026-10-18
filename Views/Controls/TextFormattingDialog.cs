@@ -13,6 +13,9 @@ using StageFlow.Models;
 
 namespace StageFlow.Views.Controls;
 
+/// <summary>
+/// Fenêtre permettant d'appliquer plusieurs styles à différentes portions d'un texte.
+/// </summary>
 /// <summary>Fenêtre permettant d'appliquer plusieurs styles à différentes portions d'un texte.</summary>
 internal static class TextFormattingDialog
 {

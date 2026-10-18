@@ -6,11 +6,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using LibVLCSharp.Avalonia;
-using LibVLCSharp.Shared;
 using StageFlow.Models;
 using System;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,18 +18,6 @@ namespace StageFlow.Services
 {
     public static class SlideRenderer
     {
-        // =========================================================
-        // LIBVLC
-        // =========================================================
-
-        private static readonly LibVLC _libVLC =
-            new LibVLC();
-
-        // Un MediaPlayer par vidéo
-        private static readonly
-            Dictionary<Guid, MediaPlayer> _videoPlayers =
-                new();
-
         // =========================================================
         // CRÉATION DU SLIDE
         // =========================================================
@@ -63,7 +48,8 @@ namespace StageFlow.Services
                 var control =
                     CreateElement(
                         element,
-                        projectFilePath);
+                        projectFilePath,
+                        presentationMode);
 
                 if (control == null)
                     continue;
@@ -149,7 +135,8 @@ namespace StageFlow.Services
 
         private static Control? CreateElement(
             SlideElement element,
-            string? projectFilePath)
+            string? projectFilePath,
+            bool presentationMode)
         {
             return element switch
             {
@@ -167,7 +154,8 @@ namespace StageFlow.Services
                 VideoElement video =>
                     CreateVideo(
                         video,
-                        projectFilePath),
+                        projectFilePath,
+                        presentationMode),
 
                 _ => null
             };
@@ -367,7 +355,8 @@ namespace StageFlow.Services
 
         private static Control CreateVideo(
             VideoElement video,
-            string? projectFilePath)
+            string? projectFilePath,
+            bool presentationMode)
         {
             // -----------------------------------------------------
             // SOURCE VIDE
@@ -399,41 +388,14 @@ namespace StageFlow.Services
                         "#3A2020");
                 }
 
-                // -------------------------------------------------
-                // MEDIA PLAYER
-                // -------------------------------------------------
-
-                if (!_videoPlayers.TryGetValue(
-                        video.Id,
-                        out MediaPlayer? mediaPlayer))
-                {
-                    mediaPlayer =
-        new MediaPlayer(_libVLC);
-
-                    _videoPlayers[video.Id] =
-                        mediaPlayer;
-
-                    mediaPlayer.EndReached +=
-                        (_, _) =>
-                        {
-                            if (!video.Loop)
-                                return;
-
-                            try
-                            {
-                                // Revenir au début sans faire Stop()
-                                // pour éviter les problèmes avec LibVLC.
-                                mediaPlayer.Time = 0;
-
-                                mediaPlayer.Play();
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine(
-                                    $"Video loop error: {ex}");
-                            }
-                        };
-                }
+                // Deux lecteurs distincts (un par fenêtre), synchronisés
+                // par le service commun pour conserver la même position.
+                var mediaPlayer = VideoPlaybackService.GetPlayer(
+                    video,
+                    videoPath,
+                    presentation: presentationMode,
+                    volume: video.Volume,
+                    loop: video.Loop);
 
                 // -------------------------------------------------
                 // VIDEO VIEW
@@ -457,53 +419,10 @@ namespace StageFlow.Services
                             false
                     };
 
-                // -------------------------------------------------
-                // MEDIA
-                // -------------------------------------------------
-
-                if (mediaPlayer.Media == null)
-                {
-                    var media =
-                        new Media(
-                            _libVLC,
-                            videoPath,
-                            FromType.FromPath);
-
-                    mediaPlayer.Media =
-                        media;
-                }
-
-                // -------------------------------------------------
-                // VOLUME
-                // -------------------------------------------------
-
-                mediaPlayer.Volume =
-                    (int)Math.Clamp(
-                        video.Volume * 100,
-                        0,
-                        100);
-
-                // -------------------------------------------------
-                // LECTURE AUTOMATIQUE
-                // -------------------------------------------------
-
-                if (video.AutoPlay &&
-                    !mediaPlayer.IsPlaying)
-                {
-                    try
-                    {
-                        // Toujours repartir du début lorsqu'on
-                        // revient sur le slide.
-                        mediaPlayer.Time = 0;
-
-                        mediaPlayer.Play();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(
-                            $"Video playback error: {ex}");
-                    }
-                }
+                // La création ou le rafraîchissement de la vue ne doit pas
+                // remettre à zéro une vidéo déjà en cours.
+                if (video.AutoPlay)
+                    VideoPlaybackService.Start(video.Id);
 
                 // -------------------------------------------------
                 // CONTAINER VIDÉO
@@ -667,28 +586,9 @@ namespace StageFlow.Services
 
         public static void StopAllVideos()
         {
-            foreach (var player in _videoPlayers.Values)
-            {
-                try
-                {
-                    if (player.IsPlaying)
-                    {
-                        player.Stop();
-                    }
-
-                    // Très important :
-                    // on remet la vidéo au début lorsqu'on quitte le slide.
-                    if (player.Media != null)
-                    {
-                        player.Time = 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(
-                        $"Error resetting video: {ex}");
-                }
-            }
+            // Compatibilité avec les anciens appels. La fermeture ou la
+            // reconstruction d'une fenêtre ne doit plus arrêter la lecture.
+            VideoPlaybackService.KeepPlaybackAlive();
         }
     }
 }

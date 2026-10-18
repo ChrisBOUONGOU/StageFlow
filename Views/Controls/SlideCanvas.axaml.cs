@@ -7,7 +7,6 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using LibVLCSharp.Shared;
 using StageFlow.Models;
 using StageFlow.Services;
 using StageFlow.ViewModels;
@@ -42,16 +41,12 @@ public partial class SlideCanvas : UserControl
     private Models.TextElement? _editingTextElement;
     private string _originalText = string.Empty;
 
-    private readonly LibVLC _libVLC;
-    private readonly Dictionary<Guid, MediaPlayer> _videoPlayers = new();
 
 
 
     public SlideCanvas()
     {
         InitializeComponent();
-
-        _libVLC = new LibVLC();
 
         EditorCanvas.PointerPressed +=
             CanvasPointerPressed;
@@ -115,14 +110,16 @@ public partial class SlideCanvas : UserControl
 
     private void RenderCanvas()
     {
-        // IMPORTANT :
-        // arrêter et remettre les vidéos au début
-        // avant de supprimer les anciens VideoView.
-        ResetVideoPlayers();
-
         EditorCanvas.Children.Clear();
 
         var slide = Editor?.CurrentSlide;
+
+        VideoPlaybackService.StopExcept(
+            slide?.Elements
+                .OfType<VideoElement>()
+                .Where(video => video.IsVisible)
+                .Select(video => video.Id)
+            ?? Enumerable.Empty<Guid>());
 
         if (slide == null)
             return;
@@ -183,31 +180,6 @@ public partial class SlideCanvas : UserControl
             }
         }
     }
-
-    private void ResetVideoPlayers()
-    {
-        foreach (var player in _videoPlayers.Values)
-        {
-            try
-            {
-                if (player.IsPlaying)
-                {
-                    player.Stop();
-                }
-
-                if (player.Media != null)
-                {
-                    player.Time = 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"Video reset error: {ex}");
-            }
-        }
-    }
-
 
     private void AddTextToolbar(TextElement text)
     {
@@ -724,42 +696,14 @@ private void ShowTextColorPicker(Button target)
                     "#3A2020");
             }
 
-            // =================================================
-            // MEDIAPLAYER
-            // =================================================
-
-            if (!_videoPlayers.TryGetValue(
-                    video.Id,
-                    out MediaPlayer? mediaPlayer))
-            {
-                mediaPlayer =
-                    new MediaPlayer(
-                        _libVLC);
-
-                _videoPlayers[
-                    video.Id] =
-                    mediaPlayer;
-            }
-
-            // =================================================
-            // MEDIA
-            // =================================================
-
-            if (mediaPlayer.Media == null)
-            {
-                using var media = new Media(
-                    _libVLC,
-                    videoPath,
-                    FromType.FromPath);
-
-                mediaPlayer.Media = media;
-            }
-
-            mediaPlayer.Volume =
-                (int)Math.Clamp(
-                    video.Volume * 100,
-                    0,
-                    100);
+            // Chaque écran possède sa propre surface native, mais les deux
+            // lecteurs sont pilotés par le même service de synchronisation.
+            var mediaPlayer = VideoPlaybackService.GetPlayer(
+                video,
+                videoPath,
+                presentation: false,
+                volume: video.Volume,
+                loop: video.Loop);
 
             // =================================================
             // VIDEOVIEW
@@ -1563,40 +1507,18 @@ private void UpdateTextToolbarPosition(
         }
     }
 
-    private void StartVideo(
-    VideoElement video)
+    private void StartVideo(VideoElement video)
     {
-        if (!_videoPlayers.TryGetValue(
-           video.Id,
-           out MediaPlayer? player))
-        {
-            return;
-        }
-
-        try
-        {
-            if (player.Media == null)
-                return;
-
-            // Toujours recommencer au début
-            player.Time = 0;
-
-            // Lancer après que le VideoView
-            // a été ajouté au Canvas.
-            player.Play();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(
-                $"Video start error: {ex}");
-        }
+        // Ne pas remettre la position à zéro lors d'un simple rafraîchissement
+        // du canevas : l'éditeur et la présentation partagent cette lecture.
+        VideoPlaybackService.Start(video.Id);
     }
 
     protected override void OnDetachedFromVisualTree(
-    VisualTreeAttachmentEventArgs e)
+        VisualTreeAttachmentEventArgs e)
     {
-        ResetVideoPlayers();
-
+        // Le détachement visuel n'arrête pas la session de lecture commune.
+        VideoPlaybackService.KeepPlaybackAlive();
         base.OnDetachedFromVisualTree(e);
     }
 
