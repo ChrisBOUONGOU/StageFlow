@@ -263,6 +263,7 @@
                                     Minimum="0"
                                     Maximum="{Binding SelectedVideoDuration}"
                                     Value="{Binding SelectedVideoPosition, Mode=OneWay}"
+                                    PointerPressed="VideoSeek_PointerPressed"
                                     PointerReleased="VideoSeek_PointerReleased"
                                     IsEnabled="{Binding IsVideoElement}"
                                     Height="24"/>
