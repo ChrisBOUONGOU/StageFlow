@@ -1,9 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-
+using Avalonia.Threading;
 using StageFlow.ViewModels;
 using StageFlow.Views;
+using System;
 
 namespace StageFlow
 {
@@ -18,10 +19,30 @@ namespace StageFlow
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
+                var splash = new SplashWindow();
+                desktop.MainWindow = splash;
+                splash.Show();
+
+                var timer = new DispatcherTimer
                 {
-                    DataContext = new MainWindowViewModel()
+                    Interval = TimeSpan.FromMilliseconds(1800)
                 };
+
+                timer.Tick += (_, _) =>
+                {
+                    timer.Stop();
+
+                    var mainWindow = new MainWindow
+                    {
+                        DataContext = new MainWindowViewModel()
+                    };
+
+                    desktop.MainWindow = mainWindow;
+                    mainWindow.Show();
+                    splash.Close();
+                };
+
+                timer.Start();
             }
 
             base.OnFrameworkInitializationCompleted();
