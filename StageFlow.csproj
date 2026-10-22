@@ -49,7 +49,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Assets\\" />
-	</ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
 
 </Project>
