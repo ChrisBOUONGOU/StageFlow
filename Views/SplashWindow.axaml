@@ -1,0 +1,36 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="StageFlow.Views.SplashWindow"
+    Title="StageFlow"
+    Width="560"
+    Height="420"
+    MinWidth="560"
+    MinHeight="420"
+    MaxWidth="560"
+    MaxHeight="420"
+    WindowStartupLocation="CenterScreen"
+    SystemDecorations="None"
+    CanResize="False"
+    Background="#0B0D12"
+    ShowInTaskbar="False">
+    <Grid>
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="18">
+            <Image Source="avares://StageFlow/Assets/logo_stage.png"
+                   Width="220"
+                   Height="220"
+                   Stretch="Uniform"/>
+            <TextBlock Text="STAGEFLOW"
+                       FontSize="25"
+                       FontWeight="Bold"
+                       Foreground="#FFFFFF"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Préparation de votre espace de présentation…"
+                       FontSize="13"
+                       Foreground="#B8C0CC"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>
